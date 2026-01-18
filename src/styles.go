@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	lg "github.com/charmbracelet/lipgloss"

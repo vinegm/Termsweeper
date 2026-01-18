@@ -1,4 +1,6 @@
-package main
+package src
+
+import tea "github.com/charmbracelet/bubbletea"
 
 // Bubble Tea application state.
 type model struct {
@@ -11,8 +13,10 @@ type model struct {
 	BoardWin      *BoardWindow
 }
 
+func (model model) Init() tea.Cmd { return nil }
+
 // Creates a new model with initial state.
-func initialModel() model {
+func InitialModel() model {
 	board := make([][]cell, rows)
 	for i := range board {
 		board[i] = make([]cell, cols)

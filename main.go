@@ -3,6 +3,8 @@ package main
 import (
 	"log"
 
+	"termsweeper/src"
+
 	tea "github.com/charmbracelet/bubbletea"
 )
 
@@ -11,9 +13,6 @@ const (
 	logLevel = "debug"
 )
 
-// Tea initialization
-func (model model) Init() tea.Cmd { return nil }
-
 func main() {
 	file, err := tea.LogToFile(logFile, logLevel)
 	if err != nil {
@@ -21,7 +20,7 @@ func main() {
 	}
 	defer file.Close()
 
-	program := tea.NewProgram(initialModel(), tea.WithAltScreen())
+	program := tea.NewProgram(src.InitialModel(), tea.WithAltScreen())
 	_, err = program.Run()
 	if err != nil {
 		log.Fatal(err)

@@ -1,4 +1,4 @@
-package main
+package src
 
 import (
 	"fmt"
@@ -82,7 +82,7 @@ func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
 
 		case "r":
 			model.inGame = true
-			model.game = initialModel().game
+			model.game = InitialModel().game
 			model.CurrentWindow = model.BoardWin
 
 		case "q":
