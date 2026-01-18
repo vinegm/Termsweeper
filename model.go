@@ -2,13 +2,13 @@ package main
 
 // Bubble Tea application state.
 type model struct {
-	game          game // game state
+	game          game // game state (domain)
 	inGame        bool // whether currently playing (vs. in menu)
-	menuChoice    int  // current menu selection
 	width, height int  // terminal dimensions
 
-	menuMinW, menuMinH   int // minimum terminal size for menu
-	boardMinW, boardMinH int // minimum terminal size for game board
+	CurrentWindow Window
+	MenuWin       *MenuWindow
+	BoardWin      *BoardWindow
 }
 
 // Creates a new model with initial state.
@@ -20,21 +20,19 @@ func initialModel() model {
 
 	game := game{
 		board:       board,
-		cursorRow:   0,
-		cursorCol:   0,
 		numMines:    mines,
 		state:       playing,
 		minesPlaced: false,
 	}
 
-	return model{
-		game:       game,
-		inGame:     false,
-		menuChoice: 0,
+	menuWinInst := &MenuWindow{Choice: 0, minWidth: 30, minHeight: 10}
+	boardWinInst := &BoardWindow{minWidth: 35, minHeight: 15}
 
-		menuMinW:  30,
-		menuMinH:  10,
-		boardMinW: 35,
-		boardMinH: 15,
+	return model{
+		game:          game,
+		inGame:        false,
+		CurrentWindow: menuWinInst,
+		MenuWin:       menuWinInst,
+		BoardWin:      boardWinInst,
 	}
 }

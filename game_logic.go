@@ -9,9 +9,9 @@ import (
  * In the complete implementation, these will be dinamic.
  */
 const (
-	rows  = 9
-	cols  = 9
-	mines = 10
+	rows  = 18
+	cols  = 18
+	mines = 40
 )
 
 // neighbor offsets for iterating over adjacent cells
@@ -60,16 +60,12 @@ func (cell *cell) char() string {
 
 // Game state.
 type game struct {
-	board [][]cell
-	state gameState // current game state
-
-	cursorRow int // cursor row
-	cursorCol int // cursor column
-
-	numRevealed int  // revealed cells count
-	numMines    int  // mines on the board
-	usedFlags   int  // flags used by the player
-	minesPlaced bool // have mines been placed
+	board       [][]cell
+	state       gameState // current game state
+	numRevealed int       // revealed cells count
+	numMines    int       // mines on the board
+	usedFlags   int       // flags used by the player
+	minesPlaced bool      // have mines been placed
 }
 
 // inBounds checks if the given row and column coordinates are within the game board.
