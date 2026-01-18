@@ -19,7 +19,7 @@ type BoardWindow struct {
 func (window *BoardWindow) Render(model *model) string {
 	var sb strings.Builder
 
-	sb.WriteString("Termsweeper\n")
+	sb.WriteString(titleStyle.Render("Termsweeper") + "\n")
 	sb.WriteString(getHint(model) + "\n\n")
 
 	for row := range model.game.board {
@@ -37,7 +37,7 @@ func (window *BoardWindow) Render(model *model) string {
 		sb.WriteString("\n")
 	}
 
-	return sb.String()
+	return windowStyle.Render(sb.String())
 }
 
 func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
@@ -67,6 +67,10 @@ func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
 			}
 
 		case " ", "enter":
+			if game.state != playing {
+				break
+			}
+
 			if !game.minesPlaced {
 				game.placeMines(window.CursorRow, window.CursorCol)
 				game.minesPlaced = true
@@ -78,18 +82,24 @@ func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
 			}
 
 		case "f":
+			if game.state != playing {
+				break
+			}
+
 			game.toggleFlag(window.CursorRow, window.CursorCol)
 
 		case "r":
 			model.inGame = true
-			model.game = InitialModel().game
+			model.game = initGame()
 			model.CurrentWindow = model.BoardWin
 
 		case "q":
 			model.inGame = false
+			model.game = initGame()
 			model.CurrentWindow = model.MenuWin
 		}
 	}
+
 	return nil
 }
 

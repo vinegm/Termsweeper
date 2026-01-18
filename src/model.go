@@ -17,23 +17,11 @@ func (model model) Init() tea.Cmd { return nil }
 
 // Creates a new model with initial state.
 func InitialModel() model {
-	board := make([][]cell, rows)
-	for i := range board {
-		board[i] = make([]cell, cols)
-	}
-
-	game := game{
-		board:       board,
-		numMines:    mines,
-		state:       playing,
-		minesPlaced: false,
-	}
-
 	menuWinInst := &MenuWindow{Choice: 0, minWidth: 30, minHeight: 10}
 	boardWinInst := &BoardWindow{minWidth: 35, minHeight: 15}
 
 	return model{
-		game:          game,
+		game:          initGame(),
 		inGame:        false,
 		CurrentWindow: menuWinInst,
 		MenuWin:       menuWinInst,

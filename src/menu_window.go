@@ -17,7 +17,7 @@ type MenuWindow struct {
 func (window *MenuWindow) Render(model *model) string {
 	var sb strings.Builder
 
-	sb.WriteString("Termsweeper\n")
+	sb.WriteString(titleStyle.Render("Termsweeper") + "\n")
 
 	items := []string{"Start Game", "Quit"}
 	for i, it := range items {
@@ -27,10 +27,10 @@ func (window *MenuWindow) Render(model *model) string {
 			continue
 		}
 
-		sb.WriteString(it)
+		sb.WriteString(textStyle.Render(it))
 	}
 
-	return sb.String()
+	return windowStyle.Render(sb.String())
 }
 
 func (window *MenuWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
