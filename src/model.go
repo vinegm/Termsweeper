@@ -21,7 +21,7 @@ func InitialModel() model {
 	boardWinInst := &BoardWindow{minWidth: 35, minHeight: 15}
 
 	return model{
-		game:          initGame(),
+		game:          newGame(),
 		inGame:        false,
 		CurrentWindow: menuWinInst,
 		MenuWin:       menuWinInst,

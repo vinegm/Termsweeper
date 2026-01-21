@@ -41,7 +41,7 @@ type cell struct {
 func (cell *cell) char() string {
 	if cell.revealed {
 		if cell.mined {
-			return "*"
+			return AppConfig.MineChar
 		}
 
 		if cell.adj == 0 {
@@ -52,7 +52,7 @@ func (cell *cell) char() string {
 	}
 
 	if cell.flagged {
-		return "F"
+		return AppConfig.FlagChar
 	}
 
 	return "·"
@@ -69,7 +69,7 @@ type game struct {
 	numRevealed int // revealed cells count
 }
 
-func initGame() game {
+func newGame() game {
 	board := make([][]cell, rows)
 	for i := range board {
 		board[i] = make([]cell, cols)

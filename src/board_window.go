@@ -20,7 +20,7 @@ func (window *BoardWindow) Render(model *model) string {
 	var sb strings.Builder
 
 	sb.WriteString(titleStyle.Render("Termsweeper") + "\n")
-	sb.WriteString(getHint(model) + "\n\n")
+	sb.WriteString(textStyle.Render(getHint(model)) + "\n\n")
 
 	for row := range model.game.board {
 		for col := range model.game.board[row] {
@@ -90,12 +90,12 @@ func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
 
 		case "r":
 			model.inGame = true
-			model.game = initGame()
+			model.game = newGame()
 			model.CurrentWindow = model.BoardWin
 
 		case "q":
 			model.inGame = false
-			model.game = initGame()
+			model.game = newGame()
 			model.CurrentWindow = model.MenuWin
 		}
 	}

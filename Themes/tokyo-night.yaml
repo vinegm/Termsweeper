@@ -1,0 +1,12 @@
+# Colors
+bg_color: ""
+even_square_color: "#1F2430"
+odd_square_color: "#2A2E3A"
+selected_color: "#7AA2F7EE"
+border_color: "#F7768FEE"
+
+# Chars
+# If you have a nerd font installed
+# flag_char: "⚑"
+flag_char: "F"
+mine_char: "X"
