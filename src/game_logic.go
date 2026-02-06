@@ -5,42 +5,36 @@ import (
 	"math/rand"
 )
 
-/* Temporary constants for board dimensions and mine count.
- * In the complete implementation, these will be dinamic.
- */
-const (
-	rows  = 18
-	cols  = 18
-	mines = 40
-)
-
-// neighbor offsets for iterating over adjacent cells
+// neighbor offsets
 var neighbors = [][2]int{
 	{-1, -1}, {-1, 0}, {-1, 1},
 	{0, -1}, {0, 1},
 	{1, -1}, {1, 0}, {1, 1},
 }
 
-type gameState int
+type cellState int
 
 const (
-	playing gameState = iota
-	lost
-	won
+	revealed cellState = 1 << iota
+	flagged
+	mined
+	odd
 )
 
 // Board cell representation.
 type cell struct {
-	revealed bool // Has been revealed
-	mined    bool // Has a mine
-	flagged  bool // Is flagged
-	adj      int  // number of adjacent mines
+	state cellState // bitmasked state of the cell
+	adj   int       // number of adjacent mines
+}
+
+func (c *cell) is(state cellState) bool {
+	return c.state&state != 0
 }
 
 // Returns the char for a given cell based on its state.
 func (cell *cell) char() string {
-	if cell.revealed {
-		if cell.mined {
+	if cell.is(revealed) {
+		if cell.is(mined) {
 			return AppConfig.MineChar
 		}
 
@@ -51,64 +45,89 @@ func (cell *cell) char() string {
 		return fmt.Sprintf("%d", cell.adj)
 	}
 
-	if cell.flagged {
+	if cell.is(flagged) {
 		return AppConfig.FlagChar
 	}
 
 	return "·"
 }
 
+type gameState int
+
+const (
+	playing gameState = 1 << iota
+	firstMove
+	lost
+	won
+
+	playerTurn = playing | firstMove
+)
+
 // Game state.
 type game struct {
-	board       [][]cell
-	state       gameState // current game state
-	minesPlaced bool      // have mines been placed
-	numMines    int       // mines on the board
+	board [][]cell
+	rows  int
+	cols  int
+	state gameState // bitmasked state of the game
 
+	numMines    int // mines on the board
 	usedFlags   int // flags used by the player
 	numRevealed int // revealed cells count
 }
 
-func newGame() game {
-	board := make([][]cell, rows)
+func (game *game) is(state gameState) bool {
+	return game.state&state != 0
+}
+
+func newGame() *game {
+	numRows := AppConfig.BoardRows
+	numCols := AppConfig.BoardCols
+	numMines := AppConfig.MineCount
+
+	board := make([][]cell, numRows)
 	for i := range board {
-		board[i] = make([]cell, cols)
-	}
+		board[i] = make([]cell, numCols)
 
-	return game{
-		board:    board,
-		numMines: mines,
-		state:    playing,
-	}
-}
-
-// inBounds checks if the given row and column coordinates are within the game board.
-func (game *game) inBounds(row, col int) bool {
-	inRow := row >= 0 && row < rows
-	inCol := col >= 0 && col < cols
-	return inRow && inCol
-}
-
-// Returns a slice of valid neighboring cell coordinates.
-func (game *game) validNeighbours(row, col int) [][2]int {
-	var valid [][2]int
-	for _, offset := range neighbors {
-		nr, nc := row+offset[0], col+offset[1]
-		if game.inBounds(nr, nc) {
-			valid = append(valid, [2]int{nr, nc})
+		for j := range board[i] {
+			if (i+j)%2 == 1 {
+				board[i][j].state |= odd
+			}
 		}
 	}
 
-	return valid
+	return &game{
+		board:    board,
+		rows:     numRows,
+		cols:     numCols,
+		numMines: numMines,
+		state:    firstMove,
+	}
+}
+
+// checks if the coordinates are within the game board.
+func (game *game) inBounds(row, col int) bool {
+	inRow := row >= 0 && row < game.rows
+	inCol := col >= 0 && col < game.cols
+	return inRow && inCol
+}
+
+// Calls fn for each valid neighbor of the cell.
+func (game *game) forEachNeighbour(row, col int, fn func(r, c int)) {
+	for _, offset := range neighbors {
+		nr, nc := row+offset[0], col+offset[1]
+		if game.inBounds(nr, nc) {
+			fn(nr, nc)
+		}
+	}
 }
 
 // Randomly places mines on the board, avoiding the first revealed cell.
 func (game *game) placeMines(firstR, firstC int) {
 	placed := 0
-	for placed < mines {
-		row := rand.Intn(rows)
-		col := rand.Intn(cols)
-		if game.board[row][col].mined {
+	for placed < game.numMines {
+		row := rand.Intn(game.rows)
+		col := rand.Intn(game.cols)
+		if game.board[row][col].is(mined) {
 			continue
 		}
 
@@ -116,13 +135,12 @@ func (game *game) placeMines(firstR, firstC int) {
 			continue
 		}
 
-		game.board[row][col].mined = true
-		for _, n := range game.validNeighbours(row, col) {
-			nr, nc := n[0], n[1]
-			if !game.board[nr][nc].mined {
+		game.board[row][col].state |= mined
+		game.forEachNeighbour(row, col, func(nr, nc int) {
+			if !game.board[nr][nc].is(mined) {
 				game.board[nr][nc].adj++
 			}
-		}
+		})
 
 		placed++
 	}
@@ -132,43 +150,48 @@ func (game *game) placeMines(firstR, firstC int) {
 func (game *game) revealAllMines() {
 	for row := range game.board {
 		for col := range game.board[row] {
-			if game.board[row][col].mined {
-				game.board[row][col].revealed = true
+			if game.board[row][col].is(mined) {
+				game.board[row][col].state |= revealed
 			}
 		}
 	}
 }
 
 // Reveals the cell at the given coordinates.
+// handles the first move logic and win/loss conditions.
+// and calls the appropriate reveal functions based on the cell state.
 func (game *game) reveal(row, col int) {
-	if !game.inBounds(row, col) {
+	if !game.is(playerTurn) || !game.inBounds(row, col) {
 		return
+	}
+
+	if game.state == firstMove {
+		game.placeMines(row, col)
+		game.state = playing
 	}
 
 	cell := &game.board[row][col]
-	if cell.revealed {
-		game.revealAround(row, col)
+	if cell.is(flagged) {
 		return
 	}
 
-	game.revealSingleCell(row, col)
+	if cell.is(revealed) {
+		game.revealAround(row, col)
+	} else {
+		game.revealSingleCell(row, col)
+	}
+
+	game.checkWin()
 }
 
-// reveals the cell at the given coordinates. If the cell has no adjacent mines,
-// it recursively reveals neighboring cells.
+// Reveals a single cell and reveals neighbors if it has no adjacent mines.
+// Expects the cell to be in bounds and not revealed nor flagged.
 func (game *game) revealSingleCell(row int, col int) {
-	if !game.inBounds(row, col) {
-		return
-	}
-
 	cell := &game.board[row][col]
-	if cell.flagged || cell.revealed {
-		return
-	}
 
 	game.numRevealed++
-	cell.revealed = true
-	if cell.mined {
+	cell.state |= revealed
+	if cell.is(mined) {
 		game.state = lost
 		game.revealAllMines()
 		return
@@ -178,73 +201,72 @@ func (game *game) revealSingleCell(row int, col int) {
 		return
 	}
 
-	for _, n := range game.validNeighbours(row, col) {
-		nr, nc := n[0], n[1]
-		if !game.board[nr][nc].revealed {
+	// Reveals empty neighboring cells.
+	game.forEachNeighbour(row, col, func(nr, nc int) {
+		cell := &game.board[nr][nc]
+		if !cell.is(revealed) && !cell.is(flagged) {
 			game.revealSingleCell(nr, nc)
 		}
-	}
+	})
 }
 
 // Reveals around a cell with adjacent flagged cells.
+// Expects the cell to be in bounds, revealed and not flagged.
 func (game *game) revealAround(row, col int) {
-	if !game.inBounds(row, col) {
-		return
-	}
-
 	cell := &game.board[row][col]
-	if !cell.revealed || cell.adj <= 0 {
+	if cell.adj <= 0 {
 		return
 	}
 
 	numAdjFlags := 0
-	for _, n := range game.validNeighbours(row, col) {
-		nr, nc := n[0], n[1]
+	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
-		if cell.flagged {
+		if cell.is(flagged) {
 			numAdjFlags++
 		}
-	}
+	})
 
 	if numAdjFlags < cell.adj {
 		return
 	}
 
-	for _, n := range game.validNeighbours(row, col) {
-		nr, nc := n[0], n[1]
+	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
-		if !cell.flagged || !cell.revealed {
+		if !game.inBounds(nr, nc) {
+			return
+		}
+
+		if !cell.is(flagged) && !cell.is(revealed) {
 			game.revealSingleCell(nr, nc)
 		}
-	}
+	})
 }
 
 // Checks if all non-mine cells have been revealed.
 func (game *game) checkWin() {
-	if game.numRevealed >= cols*rows-game.numMines {
+	if game.numRevealed >= game.cols*game.rows-game.numMines {
 		game.state = won
 	}
 }
 
 // Toggles the flag of the cell at the given coords.
 func (game *game) toggleFlag(row, col int) {
-	if !game.inBounds(row, col) {
+	if !game.is(playerTurn) || !game.inBounds(row, col) {
 		return
 	}
 
 	cell := &game.board[row][col]
-	if cell.revealed {
+	if cell.is(revealed) {
 		return
 	}
 
-	if cell.flagged {
-		cell.flagged = false
-		game.usedFlags--
+	cell.state ^= flagged
+	if cell.is(flagged) {
+		game.usedFlags++
 		return
 	}
 
-	cell.flagged = true
-	game.usedFlags++
+	game.usedFlags--
 }
 
 // Number of flags remaining.

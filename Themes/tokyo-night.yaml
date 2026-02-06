@@ -1,12 +1,50 @@
 # Colors
+text_color: "#c0caf5"
 bg_color: ""
-even_square_color: "#1F2430"
-odd_square_color: "#2A2E3A"
 selected_color: "#7AA2F7EE"
 border_color: "#F7768FEE"
 
+# Square styles
+even_square_style:
+  fg_color: ""
+  bg_color: "#1F2430"
+
+odd_square_style:
+  fg_color: ""
+  bg_color: "#2A2E3A"
+
+flagged_square_style:
+  fg_color: "#FFD580"
+  bg_color: ""
+
+mined_square_style:
+  fg_color: "#F7768FEE"
+  bg_color: ""
+
+# Styles for revealed squares
+square_mine_hint_style:
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: "#5FB3FF"
+    bg_color: ""
+  - fg_color: "#7CFF8C"
+    bg_color: ""
+  - fg_color: "#FFD580"
+    bg_color: ""
+  - fg_color: "#FF9AA2"
+    bg_color: ""
+  - fg_color: "#D7BDE2"
+    bg_color: ""
+  - fg_color: "#F5CBA7"
+    bg_color: ""
+  - fg_color: "#AED6F1"
+    bg_color: ""
+  - fg_color: "#F7DC6F"
+    bg_color: ""
+
 # Chars
-# If you have a nerd font installed
-# flag_char: "⚑"
-flag_char: "F"
-mine_char: "X"
+# If you have a nerd font installed:
+flag_char: "⚑"
+mine_char: "󰚑"
+# flag_char: "F"
+# mine_char: "X"

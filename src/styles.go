@@ -5,25 +5,53 @@ import (
 )
 
 var (
-	evenSquareStyle lg.Style
-	oddSquareStyle  lg.Style
+	textStyle             lg.Style
+	titleStyle            lg.Style
+	selectedSquareStyle   lg.Style
+	selectedMenuTextStyle lg.Style
 
-	selectedSquareStyle lg.Style
-	selectedMenuStyle   lg.Style
+	evenSquareStyle    lg.Style
+	oddSquareStyle     lg.Style
+	flaggedSquareStyle lg.Style
+	minedSquareStyle   lg.Style
 
-	textStyle   lg.Style
+	squareMineHintColor []lg.Style
+
 	windowStyle lg.Style
-	titleStyle  lg.Style
 )
+
+func styleFromConfig(baseStyle lg.Style, configStyle SquareStyleConfig) lg.Style {
+	style := lg.NewStyle().Inherit(baseStyle)
+	if configStyle.FgColor != "" {
+		style = style.Foreground(lg.Color(configStyle.FgColor))
+	}
+
+	if configStyle.BgColor != "" {
+		style = style.Background(lg.Color(configStyle.BgColor))
+	}
+
+	return style
+}
 
 // Updates styles based on the current configuration.
 func setStyles() {
-	evenSquareStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Background(lg.Color(AppConfig.EvenSquareColor)).Align(lg.Center)
-	oddSquareStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Background(lg.Color(AppConfig.OddSquareColor)).Align(lg.Center)
+	genericStyle := lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Align(lg.Center)
+	genericMenuTextStyle := lg.NewStyle().Inherit(genericStyle).Bold(true)
 
-	selectedSquareStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Background(lg.Color(AppConfig.SelectedColor)).Align(lg.Center).Bold(true)
-	selectedMenuStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.SelectedColor)).Align(lg.Center).Bold(true)
-	textStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Align(lg.Center)
+	textStyle = lg.NewStyle().Inherit(genericStyle)
+	titleStyle = lg.NewStyle().Inherit(genericMenuTextStyle)
+	selectedMenuTextStyle = lg.NewStyle().Inherit(genericMenuTextStyle).Foreground(lg.Color(AppConfig.SelectedColor))
+	selectedSquareStyle = lg.NewStyle().Inherit(genericMenuTextStyle).Background(lg.Color(AppConfig.SelectedColor))
+
+	evenSquareStyle = styleFromConfig(genericStyle, AppConfig.EvenSquareStyle)
+	oddSquareStyle = styleFromConfig(genericStyle, AppConfig.OddSquareStyle)
+	flaggedSquareStyle = styleFromConfig(genericStyle, AppConfig.FlaggedSquareStyle)
+	minedSquareStyle = styleFromConfig(genericStyle, AppConfig.MinedSquareStyle)
+
+	squareMineHintColor = make([]lg.Style, len(AppConfig.SquareMineHintStyle))
+	for i, hintConfig := range AppConfig.SquareMineHintStyle {
+		squareMineHintColor[i] = styleFromConfig(genericStyle, hintConfig)
+	}
 
 	windowStyle = lg.NewStyle().
 		Background(lg.Color(AppConfig.BgColor)).
@@ -32,19 +60,33 @@ func setStyles() {
 		BorderBackground(lg.Color(AppConfig.BgColor)).
 		BorderForeground(lg.Color(AppConfig.BorderColor)).
 		Align(lg.Center)
-
-	titleStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Bold(true).Align(lg.Center)
 }
 
 // Returns the style for a cell based on its position and selection state.
-func cellStyle(row, col int, isSelected bool) lg.Style {
+func cellStyle(cell cell, isSelected bool) lg.Style {
 	if isSelected {
 		return selectedSquareStyle
 	}
 
-	if (row+col)%2 == 0 {
-		return evenSquareStyle
+	if cell.is(flagged) {
+		return flaggedSquareStyle
 	}
 
-	return oddSquareStyle
+	if cell.is(revealed) {
+		if cell.is(mined) {
+			return minedSquareStyle
+		}
+
+		if cell.adj >= len(squareMineHintColor) {
+			return textStyle
+		}
+
+		return squareMineHintColor[cell.adj]
+	}
+
+	if cell.is(odd) {
+		return oddSquareStyle
+	}
+
+	return evenSquareStyle
 }

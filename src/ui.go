@@ -26,7 +26,7 @@ func (model model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 // Tea view rendering, handles terminal size checks and delegates to menu or game renderers.
 func (model model) View() string {
 	var minWidth, minHeight int
-	minWidth, minHeight = model.CurrentWindow.MinSize()
+	minWidth, minHeight = model.CurrentWindow.MinSize(&model)
 
 	if model.width > 0 && model.height > 0 && (model.width < minWidth || model.height < minHeight) {
 		warn := fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)

@@ -7,13 +7,15 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// BoardWindow implements the game/board screen and holds its view state.
+// Implements the game/board screen and holds its view state.
 type BoardWindow struct {
 	CursorRow int
 	CursorCol int
+}
 
-	minWidth  int
-	minHeight int
+// Initializes a new BoardWindow with the cursor at the top-left corner.
+func NewBoardWindow() *BoardWindow {
+	return &BoardWindow{CursorRow: 0, CursorCol: 0}
 }
 
 func (window *BoardWindow) Render(model *model) string {
@@ -30,7 +32,7 @@ func (window *BoardWindow) Render(model *model) string {
 			isCursorRow := window.CursorRow == row
 			isCursorCol := window.CursorCol == col
 			isSelectedCell := isCursorRow && isCursorCol
-			style := cellStyle(row, col, isSelectedCell)
+			style := cellStyle(cell, isSelectedCell)
 
 			sb.WriteString(style.Render(char + " "))
 		}
@@ -41,60 +43,52 @@ func (window *BoardWindow) Render(model *model) string {
 }
 
 func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
-	game := &model.game
+	game := model.game
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up", "k":
-			if window.CursorRow > 0 {
-				window.CursorRow--
+			if window.CursorRow == 0 {
+				window.CursorRow = game.rows - 1
+				break
 			}
+			window.CursorRow--
 
 		case "down", "j":
-			if window.CursorRow < rows-1 {
-				window.CursorRow++
+			if window.CursorRow == game.rows-1 {
+				window.CursorRow = 0
+				break
 			}
+			window.CursorRow++
 
 		case "left", "h":
-			if window.CursorCol > 0 {
-				window.CursorCol--
+			if window.CursorCol == 0 {
+				window.CursorCol = game.cols - 1
+				break
 			}
+			window.CursorCol--
 
 		case "right", "l":
-			if window.CursorCol < cols-1 {
-				window.CursorCol++
+			if window.CursorCol == game.cols-1 {
+				window.CursorCol = 0
+				break
 			}
+			window.CursorCol++
 
 		case " ", "enter":
-			if game.state != playing {
-				break
-			}
-
-			if !game.minesPlaced {
-				game.placeMines(window.CursorRow, window.CursorCol)
-				game.minesPlaced = true
-			}
-
 			game.reveal(window.CursorRow, window.CursorCol)
-			if game.state == playing {
-				game.checkWin()
-			}
 
 		case "f":
-			if game.state != playing {
-				break
-			}
-
 			game.toggleFlag(window.CursorRow, window.CursorCol)
 
 		case "r":
-			model.inGame = true
 			model.game = newGame()
-			model.CurrentWindow = model.BoardWin
 
 		case "q":
-			model.inGame = false
+			window.CursorCol = 0
+			window.CursorRow = 0
+
 			model.game = newGame()
 			model.CurrentWindow = model.MenuWin
 		}
@@ -103,15 +97,24 @@ func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
 	return nil
 }
 
-func (window *BoardWindow) MinSize() (int, int) { return window.minWidth, window.minHeight }
+func (window *BoardWindow) MinSize(model *model) (int, int) {
+	game := model.game
 
+	boardWidth := game.cols * 2 // char + space
+	minWidth := boardWidth + 4  // board + borders + padding
+	minHeight := game.rows + 6  // title + hint + borders + padding
+
+	return minWidth, minHeight
+}
+
+// Returns a hint string based on the current game state.
 func getHint(model *model) string {
 	switch model.game.state {
 	case won:
-		return "You won! Press q to quit or r to restart."
+		return "You won!"
 
 	case lost:
-		return "You lost! Press q to quit or r to restart."
+		return "You lost!"
 
 	default:
 		return fmt.Sprintf("Flags: %d", model.game.flagsRemaining())

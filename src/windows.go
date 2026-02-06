@@ -6,5 +6,5 @@ import tea "github.com/charmbracelet/bubbletea"
 type Window interface {
 	Render(model *model) string
 	HandleInput(model *model, msg tea.Msg) tea.Cmd
-	MinSize() (int, int)
+	MinSize(model *model) (int, int)
 }

@@ -1,0 +1,61 @@
+# This are all the settings you can configure in a theme file.
+# all values in here are the default values, but you can omit any of these and it will just use the defaults instead.
+# empty values for colors will use the defaults/terminal colors.
+
+# Game settings
+board_rows: 16
+board_cols: 16
+mine_count: 40
+
+# Chars
+flag_char: "F"
+mine_char: "X"
+
+# Colors
+text_color: "" # Used as the default fg color for all text, and fg color for squares if not set in their specific style
+selected_color: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
+border_color: "" # Missing a field is also fine, will use defaults/terminal colors
+bg_color: "" # Used as the default bg color for the window and squares if not set in their specific style
+
+# Square styles
+even_square_style:
+  fg_color: "" # defaults to text_color if omitted
+  bg_color: "#1C2B1C" # defaults to bg_color if omitted
+
+odd_square_style:
+  fg_color: "" # defaults to text_color if omitted
+  bg_color: "#263726" # defaults to bg_color if omitted
+
+flagged_square_style:
+  fg_color: "" # defaults to text_color if omitted
+  bg_color: "#FFD580" # defaults to bg_color if omitted
+
+mined_square_style:
+  fg_color: "" # defaults to text_color if omitted
+  bg_color: "#FF0000" # defaults to bg_color if omitted
+
+# list of styles for the numbers 1-8, in order
+# each entry can set `fg_color` and `bg_color`
+# - fg_color: "" # defaults to text_color if omitted
+#   bg_color: "" # defaults to bg_color if omitted
+square_mine_hint_style:
+  # revealed (0 adjacent mines)
+  - fg_color: ""
+    bg_color: ""
+  # 1-8 adjacent mines
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
+  - fg_color: ""
+    bg_color: ""
