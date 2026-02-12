@@ -1,5 +1,12 @@
+# Chars
+# If you have a nerd font installed:
+# flag_char: "⚑"
+# mine_char: "󰚑"
+flag_char: "F"
+mine_char: "X"
+
 # Colors
-text_color: "#c0caf5"
+fg_color: "#c0caf5"
 bg_color: ""
 selected_color: "#7AA2F7EE"
 border_color: "#F7768FEE"
@@ -19,6 +26,10 @@ flagged_square_style:
 
 mined_square_style:
   fg_color: "#F7768FEE"
+  bg_color: ""
+
+exploded_square_style:
+  fg_color: "#F770000"
   bg_color: ""
 
 # Styles for revealed squares
@@ -41,10 +52,3 @@ square_mine_hint_style:
     bg_color: ""
   - fg_color: "#F7DC6F"
     bg_color: ""
-
-# Chars
-# If you have a nerd font installed:
-flag_char: "⚑"
-mine_char: "󰚑"
-# flag_char: "F"
-# mine_char: "X"

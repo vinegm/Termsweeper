@@ -13,6 +13,12 @@ type SquareStyleConfig struct {
 	BgColor string `yaml:"bg_color"`
 }
 
+type PreserveGridBgConfig struct {
+	Revealed bool `yaml:"revealed"`
+	Flag     bool `yaml:"flag"`
+	Mine     bool `yaml:"mine"`
+}
+
 type Config struct {
 	// Game settings
 	BoardRows int `yaml:"board_rows"`
@@ -20,11 +26,12 @@ type Config struct {
 	MineCount int `yaml:"mine_count"`
 
 	// Character settings
-	FlagChar string `yaml:"flag_char"`
-	MineChar string `yaml:"mine_char"`
+	FlagChar       string `yaml:"flag_char"`
+	MineChar       string `yaml:"mine_char"`
+	UnrevealedChar string `yaml:"unrevealed_char"`
 
 	// Style settings
-	TextColor     string `yaml:"text_color"`
+	FgColor       string `yaml:"fg_color"`
 	BgColor       string `yaml:"bg_color"`
 	SelectedColor string `yaml:"selected_color"`
 	BorderColor   string `yaml:"border_color"`
@@ -35,6 +42,9 @@ type Config struct {
 	SquareMineHintStyle []SquareStyleConfig `yaml:"square_mine_hint_style"` // indexed by number of adjacent mines
 	FlaggedSquareStyle  SquareStyleConfig   `yaml:"flagged_square_style"`
 	MinedSquareStyle    SquareStyleConfig   `yaml:"mined_square_style"`
+	ExplodedSquareStyle SquareStyleConfig   `yaml:"exploded_square_style"`
+
+	PreserveGridBg PreserveGridBgConfig `yaml:"preserve_grid_bg"`
 }
 
 var AppConfig Config
@@ -55,10 +65,11 @@ func LoadConfig() error {
 		BoardCols: 16,
 		MineCount: 40,
 
-		FlagChar: "F",
-		MineChar: "X",
+		FlagChar:       "F",
+		MineChar:       "X",
+		UnrevealedChar: " ",
 
-		TextColor:     "",
+		FgColor:       "",
 		SelectedColor: "#5a5a5a",
 		BgColor:       "",
 		BorderColor:   "",
@@ -74,13 +85,18 @@ func LoadConfig() error {
 		},
 
 		FlaggedSquareStyle: SquareStyleConfig{
-			FgColor: "",
-			BgColor: "#FFD580",
+			FgColor: "#FFD580",
+			BgColor: "",
 		},
 
 		MinedSquareStyle: SquareStyleConfig{
+			FgColor: "#800000",
+			BgColor: "",
+		},
+
+		ExplodedSquareStyle: SquareStyleConfig{
 			FgColor: "",
-			BgColor: "#FF0000",
+			BgColor: "",
 		},
 
 		SquareMineHintStyle: []SquareStyleConfig{
@@ -93,6 +109,12 @@ func LoadConfig() error {
 			{FgColor: "", BgColor: ""}, // 6 mines
 			{FgColor: "", BgColor: ""}, // 7 mines
 			{FgColor: "", BgColor: ""}, // 8 mines
+		},
+
+		PreserveGridBg: PreserveGridBgConfig{
+			Revealed: false,
+			Flag:     true,
+			Mine:     true,
 		},
 	}
 

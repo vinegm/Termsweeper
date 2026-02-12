@@ -5,15 +5,18 @@ import (
 )
 
 var (
+	genericStyle lg.Style
+
 	textStyle             lg.Style
 	titleStyle            lg.Style
 	selectedSquareStyle   lg.Style
 	selectedMenuTextStyle lg.Style
 
-	evenSquareStyle    lg.Style
-	oddSquareStyle     lg.Style
-	flaggedSquareStyle lg.Style
-	minedSquareStyle   lg.Style
+	evenSquareStyle     lg.Style
+	oddSquareStyle      lg.Style
+	flaggedSquareStyle  lg.Style
+	minedSquareStyle    lg.Style
+	explodedSquareStyle lg.Style
 
 	squareMineHintColor []lg.Style
 
@@ -35,7 +38,7 @@ func styleFromConfig(baseStyle lg.Style, configStyle SquareStyleConfig) lg.Style
 
 // Updates styles based on the current configuration.
 func setStyles() {
-	genericStyle := lg.NewStyle().Foreground(lg.Color(AppConfig.TextColor)).Align(lg.Center)
+	genericStyle = lg.NewStyle().Foreground(lg.Color(AppConfig.FgColor)).Align(lg.Center)
 	genericMenuTextStyle := lg.NewStyle().Inherit(genericStyle).Bold(true)
 
 	textStyle = lg.NewStyle().Inherit(genericStyle)
@@ -47,6 +50,7 @@ func setStyles() {
 	oddSquareStyle = styleFromConfig(genericStyle, AppConfig.OddSquareStyle)
 	flaggedSquareStyle = styleFromConfig(genericStyle, AppConfig.FlaggedSquareStyle)
 	minedSquareStyle = styleFromConfig(genericStyle, AppConfig.MinedSquareStyle)
+	explodedSquareStyle = styleFromConfig(minedSquareStyle, AppConfig.ExplodedSquareStyle)
 
 	squareMineHintColor = make([]lg.Style, len(AppConfig.SquareMineHintStyle))
 	for i, hintConfig := range AppConfig.SquareMineHintStyle {
@@ -62,6 +66,34 @@ func setStyles() {
 		Align(lg.Center)
 }
 
+func validateGrid(style lg.Style, cell cell, kind string) lg.Style {
+	var preserve bool
+	switch kind {
+	case "revealed":
+		preserve = AppConfig.PreserveGridBg.Revealed
+
+	case "flag":
+		preserve = AppConfig.PreserveGridBg.Flag
+
+	case "mine":
+		preserve = AppConfig.PreserveGridBg.Mine
+
+	default:
+		preserve = false
+	}
+
+	if !preserve {
+		return style
+	}
+
+	if cell.is(odd) {
+		return style.Background(oddSquareStyle.GetBackground())
+	}
+
+	return style.Background(evenSquareStyle.GetBackground())
+
+}
+
 // Returns the style for a cell based on its position and selection state.
 func cellStyle(cell cell, isSelected bool) lg.Style {
 	if isSelected {
@@ -69,19 +101,23 @@ func cellStyle(cell cell, isSelected bool) lg.Style {
 	}
 
 	if cell.is(flagged) {
-		return flaggedSquareStyle
+		return validateGrid(flaggedSquareStyle, cell, "flag")
 	}
 
 	if cell.is(revealed) {
-		if cell.is(mined) {
-			return minedSquareStyle
+		if cell.is(exploded) {
+			return validateGrid(explodedSquareStyle, cell, "mine")
 		}
 
-		if cell.adj >= len(squareMineHintColor) {
+		if cell.is(mined) {
+			return validateGrid(minedSquareStyle, cell, "mine")
+		}
+
+		if cell.adj >= len(AppConfig.SquareMineHintStyle) {
 			return textStyle
 		}
 
-		return squareMineHintColor[cell.adj]
+		return validateGrid(squareMineHintColor[cell.adj], cell, "revealed")
 	}
 
 	if cell.is(odd) {

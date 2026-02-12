@@ -10,33 +10,43 @@ mine_count: 40
 # Chars
 flag_char: "F"
 mine_char: "X"
+unrevealed_char: " "
 
 # Colors
-text_color: "" # Used as the default fg color for all text, and fg color for squares if not set in their specific style
+fg_color: "" # Used as the default fg color for all text, and fg color for squares if not set in their specific style
 selected_color: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
 border_color: "" # Missing a field is also fine, will use defaults/terminal colors
 bg_color: "" # Used as the default bg color for the window and squares if not set in their specific style
 
 # Square styles
 even_square_style:
-  fg_color: "" # defaults to text_color if omitted
+  fg_color: "" # defaults to fg_color if omitted
   bg_color: "#1C2B1C" # defaults to bg_color if omitted
 
 odd_square_style:
-  fg_color: "" # defaults to text_color if omitted
+  fg_color: "" # defaults to fg_color if omitted
   bg_color: "#263726" # defaults to bg_color if omitted
 
 flagged_square_style:
-  fg_color: "" # defaults to text_color if omitted
-  bg_color: "#FFD580" # defaults to bg_color if omitted
+  fg_color: "#FFD580" # defaults to fg_color if omitted
+  bg_color: "" # defaults to bg_color if omitted
 
 mined_square_style:
-  fg_color: "" # defaults to text_color if omitted
-  bg_color: "#FF0000" # defaults to bg_color if omitted
+  fg_color: "#800000" # defaults to fg_color if omitted
+  bg_color: "" # defaults to bg_color if omitted
+
+exploded_square_style:
+  fg_color: "" # defaults to mined_square_style.fg_color if omitted
+  bg_color: "" # defaults to mined_square_style.bg_color if omitted
+
+preserve_grid_bg:
+  revealed: false # if true, revealed squares will use the same bg color odd/even squares
+  flag: true # if true, flagged squares will use the same bg color odd/even squares
+  mine: true # if true, mined squares will use the same bg color odd/even squares
 
 # list of styles for the numbers 1-8, in order
 # each entry can set `fg_color` and `bg_color`
-# - fg_color: "" # defaults to text_color if omitted
+# - fg_color: "" # defaults to fg_color if omitted
 #   bg_color: "" # defaults to bg_color if omitted
 square_mine_hint_style:
   # revealed (0 adjacent mines)

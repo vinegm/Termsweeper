@@ -18,6 +18,7 @@ const (
 	revealed cellState = 1 << iota
 	flagged
 	mined
+	exploded
 	odd
 )
 
@@ -27,8 +28,8 @@ type cell struct {
 	adj   int       // number of adjacent mines
 }
 
-func (c *cell) is(state cellState) bool {
-	return c.state&state != 0
+func (cell *cell) is(state cellState) bool {
+	return cell.state&state != 0
 }
 
 // Returns the char for a given cell based on its state.
@@ -49,7 +50,7 @@ func (cell *cell) char() string {
 		return AppConfig.FlagChar
 	}
 
-	return "·"
+	return AppConfig.UnrevealedChar
 }
 
 type gameState int
@@ -192,6 +193,7 @@ func (game *game) revealSingleCell(row int, col int) {
 	game.numRevealed++
 	cell.state |= revealed
 	if cell.is(mined) {
+		cell.state |= exploded
 		game.state = lost
 		game.revealAllMines()
 		return
