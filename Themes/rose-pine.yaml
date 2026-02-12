@@ -1,0 +1,35 @@
+# Chars
+# If you have a nerd font installed:
+# flag_char: "⚑"
+# mine_char: "󰚑"
+flag_char: "F"
+mine_char: "X"
+
+# Colors
+text_color: "#e6def3"
+selected_color: "#31748f"
+border_color: "#eb6f92"
+
+# Square styles
+even_square_style:
+  bg_color: "#232136"
+
+odd_square_style:
+  bg_color: "#1f1d2e"
+
+flagged_square_style:
+  fg_color: "#191724"
+
+mined_square_style:
+  fg_color: "#ffffff"
+
+square_mine_hint_style:
+  - fg_color: ""
+  - fg_color: "#89b4fa"
+  - fg_color: "#a6e3a1"
+  - fg_color: "#f9e2af"
+  - fg_color: "#f38ba8"
+  - fg_color: "#cba6f7"
+  - fg_color: "#f5c2e7"
+  - fg_color: "#89b4fa"
+  - fg_color: "#f2cdcd"

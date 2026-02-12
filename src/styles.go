@@ -100,19 +100,18 @@ func cellStyle(cell cell, isSelected bool) lg.Style {
 		return selectedSquareStyle
 	}
 
+	if cell.is(revealed) && cell.is(mined) {
+		if cell.is(exploded) {
+			return validateGrid(explodedSquareStyle, cell, "mine")
+		}
+		return validateGrid(minedSquareStyle, cell, "mine")
+	}
+
 	if cell.is(flagged) {
 		return validateGrid(flaggedSquareStyle, cell, "flag")
 	}
 
 	if cell.is(revealed) {
-		if cell.is(exploded) {
-			return validateGrid(explodedSquareStyle, cell, "mine")
-		}
-
-		if cell.is(mined) {
-			return validateGrid(minedSquareStyle, cell, "mine")
-		}
-
 		if cell.adj >= len(AppConfig.SquareMineHintStyle) {
 			return textStyle
 		}
