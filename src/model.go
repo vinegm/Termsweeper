@@ -12,7 +12,9 @@ type model struct {
 	BoardWin      *BoardWindow
 }
 
-func (model model) Init() tea.Cmd { return nil }
+func (model model) Init() tea.Cmd {
+	return tick()
+}
 
 // Creates a new model with initial state.
 func InitialModel() model {

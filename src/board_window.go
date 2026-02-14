@@ -42,56 +42,53 @@ func (window *BoardWindow) Render(model *model) string {
 	return windowStyle.Render(sb.String())
 }
 
-func (window *BoardWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
+func (window *BoardWindow) HandleInput(model *model, msg string) tea.Cmd {
 	game := model.game
 
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if window.CursorRow == 0 {
-				window.CursorRow = game.rows - 1
-				break
-			}
-			window.CursorRow--
-
-		case "down", "j":
-			if window.CursorRow == game.rows-1 {
-				window.CursorRow = 0
-				break
-			}
-			window.CursorRow++
-
-		case "left", "h":
-			if window.CursorCol == 0 {
-				window.CursorCol = game.cols - 1
-				break
-			}
-			window.CursorCol--
-
-		case "right", "l":
-			if window.CursorCol == game.cols-1 {
-				window.CursorCol = 0
-				break
-			}
-			window.CursorCol++
-
-		case " ", "enter":
-			game.reveal(window.CursorRow, window.CursorCol)
-
-		case "f":
-			game.toggleFlag(window.CursorRow, window.CursorCol)
-
-		case "r":
-			model.game = newGame()
-
-		case "q":
-			window.CursorCol = 0
-			window.CursorRow = 0
-
-			model.game = newGame()
-			model.CurrentWindow = model.MenuWin
+	switch msg {
+	case "up", "k":
+		if window.CursorRow == 0 {
+			window.CursorRow = game.rows-1
+			break
 		}
+		window.CursorRow--
+
+	case "down", "j":
+		if window.CursorRow == game.rows-1 {
+			window.CursorRow = 0
+			break
+		}
+		window.CursorRow++
+
+	case "left", "h":
+		if window.CursorCol == 0 {
+			window.CursorCol = game.cols-1
+			break
+		}
+		window.CursorCol--
+
+	case "right", "l":
+		if window.CursorCol == game.cols-1 {
+			window.CursorCol = 0
+			break
+		}
+		window.CursorCol++
+
+	case " ", "enter":
+		game.reveal(window.CursorRow, window.CursorCol)
+
+	case "f":
+		game.toggleFlag(window.CursorRow, window.CursorCol)
+
+	case "r":
+		model.game = newGame()
+
+	case "q":
+		window.CursorCol = 0
+		window.CursorRow = 0
+
+		model.game = newGame()
+		model.CurrentWindow = model.MenuWin
 	}
 
 	return nil
@@ -111,12 +108,12 @@ func (window *BoardWindow) MinSize(model *model) (int, int) {
 func getHint(model *model) string {
 	switch model.game.state {
 	case won:
-		return "You won!"
+		return fmt.Sprintf("You won! Time: %s", model.game.FormattedTime())
 
 	case lost:
-		return "You lost!"
+		return fmt.Sprintf("You lost! Time: %s", model.game.FormattedTime())
 
 	default:
-		return fmt.Sprintf("Flags: %d", model.game.flagsRemaining())
+		return fmt.Sprintf("Flags: %d  Time: %s", model.game.flagsRemaining(), model.game.FormattedTime())
 	}
 }

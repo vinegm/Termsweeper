@@ -50,78 +50,75 @@ func (window *MenuWindow) Render(model *model) string {
 	return windowStyle.Render(sb.String())
 }
 
-func (window *MenuWindow) HandleInput(model *model, msg tea.Msg) tea.Cmd {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up", "k":
-			if window.Choice > 0 {
-				window.Choice--
-			}
+func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
+	switch msg {
+	case "up", "k":
+		if window.Choice > 0 {
+			window.Choice--
+		}
 
-		case "down", "j":
-			if window.Choice < 4 {
-				window.Choice++
-			}
+	case "down", "j":
+		if window.Choice < 4 {
+			window.Choice++
+		}
 
-		case "left":
-			switch window.Choice {
-			case 1:
-				if AppConfig.BoardRows > 5 {
-					AppConfig.BoardRows--
-					max := AppConfig.BoardRows * AppConfig.BoardCols
-					if AppConfig.MineCount >= max {
-						AppConfig.MineCount = max - 1
-					}
-				}
-
-			case 2:
-				if AppConfig.BoardCols > 5 {
-					AppConfig.BoardCols--
-					max := AppConfig.BoardRows * AppConfig.BoardCols
-					if AppConfig.MineCount >= max {
-						AppConfig.MineCount = max - 1
-					}
-				}
-
-			case 3:
-				if AppConfig.MineCount > 1 {
-					AppConfig.MineCount--
-				}
-			}
-
-		case "right":
-			switch window.Choice {
-			case 1:
-				if AppConfig.BoardRows < 40 {
-					AppConfig.BoardRows++
-				}
-
-			case 2:
-				if AppConfig.BoardCols < 40 {
-					AppConfig.BoardCols++
-				}
-
-			case 3:
+	case "left":
+		switch window.Choice {
+		case 1:
+			if AppConfig.BoardRows > 5 {
+				AppConfig.BoardRows--
 				max := AppConfig.BoardRows * AppConfig.BoardCols
-				if AppConfig.MineCount < max-1 {
-					AppConfig.MineCount++
+				if AppConfig.MineCount >= max {
+					AppConfig.MineCount = max - 1
 				}
 			}
 
-		case "enter", " ":
-			switch window.Choice {
-			case 0:
-				model.game = newGame()
-				model.CurrentWindow = model.BoardWin
-
-			case 4:
-				return tea.Quit
+		case 2:
+			if AppConfig.BoardCols > 5 {
+				AppConfig.BoardCols--
+				max := AppConfig.BoardRows * AppConfig.BoardCols
+				if AppConfig.MineCount >= max {
+					AppConfig.MineCount = max - 1
+				}
 			}
 
-		case "q":
+		case 3:
+			if AppConfig.MineCount > 1 {
+				AppConfig.MineCount--
+			}
+		}
+
+	case "right":
+		switch window.Choice {
+		case 1:
+			if AppConfig.BoardRows < 40 {
+				AppConfig.BoardRows++
+			}
+
+		case 2:
+			if AppConfig.BoardCols < 40 {
+				AppConfig.BoardCols++
+			}
+
+		case 3:
+			max := AppConfig.BoardRows * AppConfig.BoardCols
+			if AppConfig.MineCount < max-1 {
+				AppConfig.MineCount++
+			}
+		}
+
+	case "enter", " ":
+		switch window.Choice {
+		case 0:
+			model.game = newGame()
+			model.CurrentWindow = model.BoardWin
+
+		case 4:
 			return tea.Quit
 		}
+
+	case "q":
+		return tea.Quit
 	}
 
 	return nil

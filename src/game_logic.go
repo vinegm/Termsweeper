@@ -66,6 +66,8 @@ const (
 
 // Game state.
 type game struct {
+	Timer
+
 	board [][]cell
 	rows  int
 	cols  int
@@ -97,6 +99,7 @@ func newGame() *game {
 	}
 
 	return &game{
+		Timer:    Timer{},
 		board:    board,
 		rows:     numRows,
 		cols:     numCols,
@@ -169,6 +172,7 @@ func (game *game) reveal(row, col int) {
 	if game.state == firstMove {
 		game.placeMines(row, col)
 		game.state = playing
+		game.StartTimer()
 	}
 
 	cell := &game.board[row][col]
@@ -195,6 +199,7 @@ func (game *game) revealSingleCell(row int, col int) {
 	if cell.is(mined) {
 		cell.state |= exploded
 		game.state = lost
+		game.StopTimer()
 		game.revealAllMines()
 		return
 	}
@@ -248,6 +253,7 @@ func (game *game) revealAround(row, col int) {
 func (game *game) checkWin() {
 	if game.numRevealed >= game.cols*game.rows-game.numMines {
 		game.state = won
+		game.StopTimer()
 	}
 }
 

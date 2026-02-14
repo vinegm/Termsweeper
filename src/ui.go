@@ -2,6 +2,8 @@ package src
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
@@ -15,8 +17,14 @@ func (model model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		model.height = msg.Height
 		return model, nil
 
+	case time.Time:
+		if model.CurrentWindow == model.BoardWin {
+			return model, tick()
+		}
+		return model, nil
+
 	case tea.KeyMsg:
-		cmd := model.CurrentWindow.HandleInput(&model, msg)
+		cmd := model.CurrentWindow.HandleInput(&model, strings.ToLower(msg.String()))
 		return model, cmd
 	}
 
@@ -45,4 +53,9 @@ func (model model) View() string {
 	}
 
 	return basePanel
+}
+
+// tick returns a command that sends a time.Time every second to drive UI updates.
+func tick() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg { return t })
 }
