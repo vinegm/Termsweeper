@@ -7,9 +7,20 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type menuOption int
+
+const (
+	startGame menuOption = iota
+	boardRows
+	boardCols
+	mineCount
+	quit
+)
+
 // Implements the menu screen and holds its view state.
 type MenuWindow struct {
-	Choice int
+	Choice       menuOption
+	numMenuItems int
 
 	minWidth  int
 	minHeight int
@@ -17,7 +28,7 @@ type MenuWindow struct {
 
 // Initializes a new MenuWindow with the first menu item selected and minimum size set.
 func NewMenuWindow() *MenuWindow {
-	return &MenuWindow{Choice: 0, minWidth: 30, minHeight: 10}
+	return &MenuWindow{Choice: startGame, numMenuItems: 5, minWidth: 30, minHeight: 10}
 }
 
 func (window *MenuWindow) Render(model *model) string {
@@ -39,7 +50,7 @@ func (window *MenuWindow) Render(model *model) string {
 
 	for i, it := range items {
 		sb.WriteString("\n")
-		if window.Choice == i {
+		if window.Choice == menuOption(i) {
 			sb.WriteString(selectedMenuTextStyle.Render(it))
 			continue
 		}
@@ -58,13 +69,13 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 		}
 
 	case "down", "j":
-		if window.Choice < 4 {
+		if window.Choice < menuOption(window.numMenuItems-1) {
 			window.Choice++
 		}
 
 	case "left":
 		switch window.Choice {
-		case 1:
+		case boardRows:
 			if AppConfig.BoardRows > 5 {
 				AppConfig.BoardRows--
 				max := AppConfig.BoardRows * AppConfig.BoardCols
@@ -73,7 +84,7 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 				}
 			}
 
-		case 2:
+		case boardCols:
 			if AppConfig.BoardCols > 5 {
 				AppConfig.BoardCols--
 				max := AppConfig.BoardRows * AppConfig.BoardCols
@@ -82,7 +93,7 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 				}
 			}
 
-		case 3:
+		case mineCount:
 			if AppConfig.MineCount > 1 {
 				AppConfig.MineCount--
 			}
@@ -90,17 +101,17 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 
 	case "right":
 		switch window.Choice {
-		case 1:
-			if AppConfig.BoardRows < 40 {
+		case boardRows:
+			if AppConfig.BoardRows < model.height - 10 {
 				AppConfig.BoardRows++
 			}
 
-		case 2:
-			if AppConfig.BoardCols < 40 {
+		case boardCols:
+			if AppConfig.BoardCols < model.width/2 - 10 {
 				AppConfig.BoardCols++
 			}
 
-		case 3:
+		case mineCount:
 			max := AppConfig.BoardRows * AppConfig.BoardCols
 			if AppConfig.MineCount < max-1 {
 				AppConfig.MineCount++
@@ -109,11 +120,11 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 
 	case "enter", " ":
 		switch window.Choice {
-		case 0:
+		case startGame:
 			model.game = newGame()
 			model.CurrentWindow = model.BoardWin
 
-		case 4:
+		case quit:
 			return tea.Quit
 		}
 

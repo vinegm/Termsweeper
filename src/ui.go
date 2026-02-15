@@ -36,15 +36,12 @@ func (model model) View() string {
 	var minWidth, minHeight int
 	minWidth, minHeight = model.CurrentWindow.MinSize(&model)
 
-	if model.width > 0 && model.height > 0 && (model.width < minWidth || model.height < minHeight) {
+	if model.width < minWidth || model.height < minHeight {
 		warn := fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
 		return lg.Place(model.width, model.height, lg.Center, lg.Center, warn)
 	}
 
-	var basePanel string
-	if model.CurrentWindow != nil {
-		basePanel = model.CurrentWindow.Render(&model)
-	}
+	basePanel := model.CurrentWindow.Render(&model)
 
 	// Render centered base panel
 	if model.width > 0 && model.height > 0 {
@@ -52,7 +49,8 @@ func (model model) View() string {
 		return centeredBase
 	}
 
-	return basePanel
+	centeredPanel := lg.Place(model.width, model.height, lg.Center, lg.Center, basePanel)
+	return centeredPanel
 }
 
 // tick returns a command that sends a time.Time every second to drive UI updates.
