@@ -19,8 +19,7 @@ const (
 
 // Implements the menu screen and holds its view state.
 type MenuWindow struct {
-	Choice       menuOption
-	numMenuItems int
+	Choice menuOption
 
 	minWidth  int
 	minHeight int
@@ -28,27 +27,31 @@ type MenuWindow struct {
 
 // Initializes a new MenuWindow with the first menu item selected and minimum size set.
 func NewMenuWindow() *MenuWindow {
-	return &MenuWindow{Choice: startGame, numMenuItems: 5, minWidth: 30, minHeight: 10}
+	return &MenuWindow{Choice: startGame, minWidth: 30, minHeight: 10}
 }
 
-func (window *MenuWindow) Render(model *Model) string {
-	var sb strings.Builder
-
-	sb.WriteString(model.theme.titleStyle.Render(getMenuTitle()) + "\n")
-
+// The menu lines, in the order the menuOption constants declare them.
+func menuItems(model *Model) []string {
 	rows := model.settings.Rows
 	cols := model.settings.Cols
 	mines := model.settings.Mines
 
-	items := []string{
+	return []string{
 		"Start Game",
 		"Board Rows: " + fmt.Sprintf("%d", rows),
 		"Board Cols: " + fmt.Sprintf("%d", cols),
 		"Mines: " + fmt.Sprintf("%d", mines),
 		"Quit",
 	}
+}
 
-	for i, it := range items {
+func (window *MenuWindow) Render(model *Model) string {
+	var sb strings.Builder
+
+	sb.WriteString(model.theme.titleStyle.Render(getMenuTitle()))
+	sb.WriteString("\n")
+
+	for i, it := range menuItems(model) {
 		sb.WriteString("\n")
 		if window.Choice == menuOption(i) {
 			sb.WriteString(model.theme.selectedMenuTextStyle.Render(it))
@@ -71,7 +74,7 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		}
 
 	case "down", "j":
-		if window.Choice < menuOption(window.numMenuItems-1) {
+		if window.Choice < menuOption(len(menuItems(model))-1) {
 			window.Choice++
 		}
 
@@ -102,14 +105,16 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		}
 
 	case "right":
+		maxRows, maxCols := maxBoardSize(model.width, model.height)
+
 		switch window.Choice {
 		case boardRows:
-			if settings.Rows < model.height-10 {
+			if settings.Rows < maxRows {
 				settings.Rows++
 			}
 
 		case boardCols:
-			if settings.Cols < model.width/2-10 {
+			if settings.Cols < maxCols {
 				settings.Cols++
 			}
 

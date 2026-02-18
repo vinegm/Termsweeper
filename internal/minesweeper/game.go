@@ -27,7 +27,7 @@ type Cell struct {
 	Adj   int       // number of adjacent mines
 }
 
-func (cell *Cell) Is(state CellState) bool {
+func (cell Cell) Is(state CellState) bool {
 	return cell.State&state != 0
 }
 
@@ -175,30 +175,42 @@ func (game *Game) Reveal(row, col int) {
 
 // Reveals a single cell and reveals neighbors if it has no adjacent mines.
 // Expects the cell to be in bounds and not revealed nor flagged.
+// Iterative so that a large empty board cannot blow the stack.
 func (game *Game) revealSingleCell(row int, col int) {
-	cell := &game.board[row][col]
+	pending := [][2]int{{row, col}}
 
-	game.numRevealed++
-	cell.State |= Revealed
-	if cell.Is(Mined) {
-		cell.State |= Exploded
-		game.state = Lost
-		game.StopTimer()
-		game.revealAllMines()
-		return
-	}
+	for len(pending) > 0 {
+		last := len(pending) - 1
+		row, col := pending[last][0], pending[last][1]
+		pending = pending[:last]
 
-	if cell.Adj != 0 {
-		return
-	}
-
-	// Reveals empty neighboring cells.
-	game.forEachNeighbour(row, col, func(nr, nc int) {
-		cell := &game.board[nr][nc]
-		if !cell.Is(Revealed) && !cell.Is(Flagged) {
-			game.revealSingleCell(nr, nc)
+		cell := &game.board[row][col]
+		if cell.Is(Revealed) || cell.Is(Flagged) {
+			continue
 		}
-	})
+
+		game.numRevealed++
+		cell.State |= Revealed
+		if cell.Is(Mined) {
+			cell.State |= Exploded
+			game.state = Lost
+			game.StopTimer()
+			game.revealAllMines()
+			return
+		}
+
+		if cell.Adj != 0 {
+			continue
+		}
+
+		// Queues empty neighboring cells.
+		game.forEachNeighbour(row, col, func(nr, nc int) {
+			cell := &game.board[nr][nc]
+			if !cell.Is(Revealed) && !cell.Is(Flagged) {
+				pending = append(pending, [2]int{nr, nc})
+			}
+		})
+	}
 }
 
 // Reveals around a cell with adjacent flagged cells.
@@ -223,10 +235,6 @@ func (game *Game) revealAround(row, col int) {
 
 	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
-		if !game.inBounds(nr, nc) {
-			return
-		}
-
 		if !cell.Is(Flagged) && !cell.Is(Revealed) {
 			game.revealSingleCell(nr, nc)
 		}

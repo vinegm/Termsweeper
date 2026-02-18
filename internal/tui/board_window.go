@@ -9,6 +9,12 @@ import (
 	"termsweeper/internal/minesweeper"
 )
 
+// Space the board window needs on top of the board itself.
+const (
+	boardChromeWidth  = 4 // borders + padding
+	boardChromeHeight = 6 // title + hint + borders + padding
+)
+
 // Implements the game/board screen and holds its view state.
 type BoardWindow struct {
 	CursorRow int
@@ -23,8 +29,10 @@ func NewBoardWindow() *BoardWindow {
 func (window *BoardWindow) Render(model *Model) string {
 	var sb strings.Builder
 
-	sb.WriteString(model.theme.titleStyle.Render("Termsweeper") + "\n")
-	sb.WriteString(model.theme.textStyle.Render(getHint(model)) + "\n\n")
+	sb.WriteString(model.theme.titleStyle.Render("Termsweeper"))
+	sb.WriteString("\n")
+	sb.WriteString(model.theme.textStyle.Render(getHint(model)))
+	sb.WriteString("\n\n")
 
 	for row := range model.game.Rows() {
 		for col := range model.game.Cols() {
@@ -83,27 +91,37 @@ func (window *BoardWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		game.ToggleFlag(window.CursorRow, window.CursorCol)
 
 	case "r":
-		model.newGame()
+		window.reset(model)
 
 	case "q":
-		window.CursorCol = 0
-		window.CursorRow = 0
-
-		model.newGame()
+		window.reset(model)
 		model.CurrentWindow = model.MenuWin
 	}
 
 	return nil
 }
 
+// Starts a fresh board with the cursor back at the top-left corner.
+func (window *BoardWindow) reset(model *Model) {
+	window.CursorRow = 0
+	window.CursorCol = 0
+
+	model.newGame()
+}
+
 func (window *BoardWindow) MinSize(model *Model) (int, int) {
 	game := model.game
 
 	boardWidth := game.Cols() * 2 // char + space
-	minWidth := boardWidth + 4    // board + borders + padding
-	minHeight := game.Rows() + 6  // title + hint + borders + padding
+	minWidth := boardWidth + boardChromeWidth
+	minHeight := game.Rows() + boardChromeHeight
 
 	return minWidth, minHeight
+}
+
+// Largest board that still fits in the given terminal size. Inverse of MinSize.
+func maxBoardSize(width, height int) (rows, cols int) {
+	return height - boardChromeHeight, (width - boardChromeWidth) / 2
 }
 
 // Returns a hint string based on the current game state.

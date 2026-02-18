@@ -15,7 +15,7 @@ type Timer struct {
 
 // initializes the timer. If already running does nothing.
 func (timer *Timer) StartTimer() {
-	if !timer.start.IsZero() && timer.elapsed == 0 {
+	if timer.running {
 		return
 	}
 

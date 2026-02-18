@@ -79,20 +79,27 @@ func (theme *Theme) setStyles() {
 		Align(lg.Center)
 }
 
-func (theme *Theme) validateGrid(style lg.Style, cell minesweeper.Cell, kind string) lg.Style {
+// The square kinds that can be configured to keep the checkerboard background.
+type squareKind int
+
+const (
+	revealedSquare squareKind = iota
+	flagSquare
+	mineSquare
+)
+
+// Restores the checkerboard background on a square whose kind is configured to keep it.
+func (theme *Theme) preserveGridBg(style lg.Style, cell minesweeper.Cell, kind squareKind) lg.Style {
 	var preserve bool
 	switch kind {
-	case "revealed":
+	case revealedSquare:
 		preserve = theme.config.PreserveGridBg.Revealed
 
-	case "flag":
+	case flagSquare:
 		preserve = theme.config.PreserveGridBg.Flag
 
-	case "mine":
+	case mineSquare:
 		preserve = theme.config.PreserveGridBg.Mine
-
-	default:
-		preserve = false
 	}
 
 	if !preserve {
@@ -104,7 +111,6 @@ func (theme *Theme) validateGrid(style lg.Style, cell minesweeper.Cell, kind str
 	}
 
 	return style.Background(theme.evenSquareStyle.GetBackground())
-
 }
 
 // Returns the style for a cell based on its position and selection state.
@@ -115,13 +121,13 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 
 	if cell.Is(minesweeper.Revealed) && cell.Is(minesweeper.Mined) {
 		if cell.Is(minesweeper.Exploded) {
-			return theme.validateGrid(theme.explodedSquareStyle, cell, "mine")
+			return theme.preserveGridBg(theme.explodedSquareStyle, cell, mineSquare)
 		}
-		return theme.validateGrid(theme.minedSquareStyle, cell, "mine")
+		return theme.preserveGridBg(theme.minedSquareStyle, cell, mineSquare)
 	}
 
 	if cell.Is(minesweeper.Flagged) {
-		return theme.validateGrid(theme.flaggedSquareStyle, cell, "flag")
+		return theme.preserveGridBg(theme.flaggedSquareStyle, cell, flagSquare)
 	}
 
 	if cell.Is(minesweeper.Revealed) {
@@ -129,7 +135,7 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 			return theme.textStyle
 		}
 
-		return theme.validateGrid(theme.squareMineHintColor[cell.Adj], cell, "revealed")
+		return theme.preserveGridBg(theme.squareMineHintColor[cell.Adj], cell, revealedSquare)
 	}
 
 	if cell.Is(minesweeper.Odd) {

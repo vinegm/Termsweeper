@@ -33,24 +33,16 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // Tea view rendering, handles terminal size checks and delegates to menu or game renderers.
 func (model Model) View() string {
-	var minWidth, minHeight int
-	minWidth, minHeight = model.CurrentWindow.MinSize(&model)
+	minWidth, minHeight := model.CurrentWindow.MinSize(&model)
 
 	if model.width < minWidth || model.height < minHeight {
 		warn := fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
 		return lg.Place(model.width, model.height, lg.Center, lg.Center, warn)
 	}
 
-	basePanel := model.CurrentWindow.Render(&model)
-
 	// Render centered base panel
-	if model.width > 0 && model.height > 0 {
-		centeredBase := lg.Place(model.width, model.height, lg.Center, lg.Center, basePanel)
-		return centeredBase
-	}
-
-	centeredPanel := lg.Place(model.width, model.height, lg.Center, lg.Center, basePanel)
-	return centeredPanel
+	basePanel := model.CurrentWindow.Render(&model)
+	return lg.Place(model.width, model.height, lg.Center, lg.Center, basePanel)
 }
 
 // tick returns a command that sends a time.Time every second to drive UI updates.
