@@ -1,4 +1,4 @@
-package src
+package tui
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 )
 
 // Tea update loop
-func (model model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		model.width = msg.Width
@@ -32,7 +32,7 @@ func (model model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // Tea view rendering, handles terminal size checks and delegates to menu or game renderers.
-func (model model) View() string {
+func (model Model) View() string {
 	var minWidth, minHeight int
 	minWidth, minHeight = model.CurrentWindow.MinSize(&model)
 

@@ -1,4 +1,4 @@
-package src
+package config
 
 import (
 	"os"
@@ -47,20 +47,9 @@ type Config struct {
 	PreserveGridBg PreserveGridBgConfig `yaml:"preserve_grid_bg"`
 }
 
-var AppConfig Config
-
-func configDefaultPath() string {
-	if home, err := os.UserHomeDir(); err == nil {
-		return filepath.Join(home, ".config", "termsweeper", "config.yaml")
-	}
-
-	// crappy fallback, might not even work
-	return "$HOME/.config/termsweeper/config.yaml"
-}
-
-// Loads configuration from file.
-func LoadConfig() error {
-	AppConfig = Config{
+// The built-in configuration, used as the base the config file is layered over.
+func Default() Config {
+	return Config{
 		BoardRows: 16,
 		BoardCols: 16,
 		MineCount: 40,
@@ -117,20 +106,30 @@ func LoadConfig() error {
 			Mine:     true,
 		},
 	}
+}
 
-	path := configDefaultPath()
+// Loads configuration from file. The returned config is always usable:
+// on error the defaults are returned alongside it.
+func Load(path string) (Config, error) {
+	config := Default()
+
 	data, err := os.ReadFile(path)
 	if err != nil {
-		setStyles()
-
-		return err
+		return config, err
 	}
 
-	if err := yaml.Unmarshal(data, &AppConfig); err != nil {
-		return err
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return Default(), err
 	}
 
-	setStyles()
+	return config, nil
+}
 
-	return nil
+func DefaultPath() string {
+	if home, err := os.UserHomeDir(); err == nil {
+		return filepath.Join(home, ".config", "termsweeper", "config.yaml")
+	}
+
+	// crappy fallback, might not even work
+	return "$HOME/.config/termsweeper/config.yaml"
 }

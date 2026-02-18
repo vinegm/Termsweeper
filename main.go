@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 
-	"termsweeper/src"
-
 	tea "github.com/charmbracelet/bubbletea"
+
+	"termsweeper/internal/config"
+	"termsweeper/internal/tui"
 )
 
 const (
@@ -31,13 +32,13 @@ func main() {
 		defer file.Close()
 	}
 
-	if err := src.LoadConfig(); err != nil && !os.IsNotExist(err) {
+	cfg, err := config.Load(config.DefaultPath())
+	if err != nil && !os.IsNotExist(err) {
 		log.Printf("Could not load config: %v", err)
 	}
 
-	program := tea.NewProgram(src.InitialModel(), tea.WithAltScreen())
-	_, err := program.Run()
-	if err != nil {
+	program := tea.NewProgram(tui.New(cfg), tea.WithAltScreen())
+	if _, err := program.Run(); err != nil {
 		log.Fatal(err)
 	}
 }

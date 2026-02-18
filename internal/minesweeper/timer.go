@@ -1,4 +1,4 @@
-package src
+package minesweeper
 
 import (
 	"fmt"

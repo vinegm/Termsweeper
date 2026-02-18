@@ -47,7 +47,7 @@ Runtime debug flags:
 
 ## Configuration
 
-Configuration is loaded at startup (see `src/config.go`). An example config is provided at `Themes/example-config.yaml`.
+Configuration is loaded at startup (see `internal/config/config.go`). An example config is provided at `Themes/example-config.yaml`.
 
 Configurable items include board rows/columns, mine count, characters for mines/flags/unrevealed cells, and many color settings for cells and UI elements.
 

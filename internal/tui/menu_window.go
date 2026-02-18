@@ -1,4 +1,4 @@
-package src
+package tui
 
 import (
 	"fmt"
@@ -31,14 +31,14 @@ func NewMenuWindow() *MenuWindow {
 	return &MenuWindow{Choice: startGame, numMenuItems: 5, minWidth: 30, minHeight: 10}
 }
 
-func (window *MenuWindow) Render(model *model) string {
+func (window *MenuWindow) Render(model *Model) string {
 	var sb strings.Builder
 
-	sb.WriteString(titleStyle.Render(getMenuTitle()) + "\n")
+	sb.WriteString(model.theme.titleStyle.Render(getMenuTitle()) + "\n")
 
-	rows := AppConfig.BoardRows
-	cols := AppConfig.BoardCols
-	mines := AppConfig.MineCount
+	rows := model.settings.Rows
+	cols := model.settings.Cols
+	mines := model.settings.Mines
 
 	items := []string{
 		"Start Game",
@@ -51,17 +51,19 @@ func (window *MenuWindow) Render(model *model) string {
 	for i, it := range items {
 		sb.WriteString("\n")
 		if window.Choice == menuOption(i) {
-			sb.WriteString(selectedMenuTextStyle.Render(it))
+			sb.WriteString(model.theme.selectedMenuTextStyle.Render(it))
 			continue
 		}
 
-		sb.WriteString(textStyle.Render(it))
+		sb.WriteString(model.theme.textStyle.Render(it))
 	}
 
-	return windowStyle.Render(sb.String())
+	return model.theme.windowStyle.Render(sb.String())
 }
 
-func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
+func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
+	settings := &model.settings
+
 	switch msg {
 	case "up", "k":
 		if window.Choice > 0 {
@@ -76,52 +78,52 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 	case "left":
 		switch window.Choice {
 		case boardRows:
-			if AppConfig.BoardRows > 5 {
-				AppConfig.BoardRows--
-				max := AppConfig.BoardRows * AppConfig.BoardCols
-				if AppConfig.MineCount >= max {
-					AppConfig.MineCount = max - 1
+			if settings.Rows > 5 {
+				settings.Rows--
+				max := settings.Rows * settings.Cols
+				if settings.Mines >= max {
+					settings.Mines = max - 1
 				}
 			}
 
 		case boardCols:
-			if AppConfig.BoardCols > 5 {
-				AppConfig.BoardCols--
-				max := AppConfig.BoardRows * AppConfig.BoardCols
-				if AppConfig.MineCount >= max {
-					AppConfig.MineCount = max - 1
+			if settings.Cols > 5 {
+				settings.Cols--
+				max := settings.Rows * settings.Cols
+				if settings.Mines >= max {
+					settings.Mines = max - 1
 				}
 			}
 
 		case mineCount:
-			if AppConfig.MineCount > 1 {
-				AppConfig.MineCount--
+			if settings.Mines > 1 {
+				settings.Mines--
 			}
 		}
 
 	case "right":
 		switch window.Choice {
 		case boardRows:
-			if AppConfig.BoardRows < model.height - 10 {
-				AppConfig.BoardRows++
+			if settings.Rows < model.height-10 {
+				settings.Rows++
 			}
 
 		case boardCols:
-			if AppConfig.BoardCols < model.width/2 - 10 {
-				AppConfig.BoardCols++
+			if settings.Cols < model.width/2-10 {
+				settings.Cols++
 			}
 
 		case mineCount:
-			max := AppConfig.BoardRows * AppConfig.BoardCols
-			if AppConfig.MineCount < max-1 {
-				AppConfig.MineCount++
+			max := settings.Rows * settings.Cols
+			if settings.Mines < max-1 {
+				settings.Mines++
 			}
 		}
 
 	case "enter", " ":
 		switch window.Choice {
 		case startGame:
-			model.game = newGame()
+			model.newGame()
 			model.CurrentWindow = model.BoardWin
 
 		case quit:
@@ -135,7 +137,7 @@ func (window *MenuWindow) HandleInput(model *model, msg string) tea.Cmd {
 	return nil
 }
 
-func (window *MenuWindow) MinSize(_ *model) (int, int) { return window.minWidth, window.minHeight }
+func (window *MenuWindow) MinSize(_ *Model) (int, int) { return window.minWidth, window.minHeight }
 
 func getMenuTitle() string {
 	art := `
