@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"termsweeper/internal/minesweeper"
 )
@@ -84,7 +84,7 @@ func (window *BoardWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		}
 		window.CursorCol++
 
-	case " ", "enter":
+	case "space", "enter":
 		game.Reveal(window.CursorRow, window.CursorCol)
 
 	case "f":

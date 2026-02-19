@@ -3,7 +3,7 @@ package tui
 import (
 	"fmt"
 
-	lg "github.com/charmbracelet/lipgloss"
+	lg "charm.land/lipgloss/v2"
 
 	"termsweeper/internal/config"
 	"termsweeper/internal/minesweeper"

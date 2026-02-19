@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	lg "charm.land/lipgloss/v2"
 )
 
 // Tea update loop
@@ -18,12 +18,9 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return model, nil
 
 	case time.Time:
-		if model.CurrentWindow == model.BoardWin {
-			return model, tick()
-		}
-		return model, nil
+		return model, tick()
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		cmd := model.CurrentWindow.HandleInput(&model, strings.ToLower(msg.String()))
 		return model, cmd
 	}
@@ -32,20 +29,26 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // Tea view rendering, handles terminal size checks and delegates to menu or game renderers.
-func (model Model) View() string {
+func (model Model) View() tea.View {
 	minWidth, minHeight := model.CurrentWindow.MinSize(&model)
 
+	var content string
 	if model.width < minWidth || model.height < minHeight {
-		warn := fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
-		return lg.Place(model.width, model.height, lg.Center, lg.Center, warn)
+		content = fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
+	} else {
+		// Render centered base panel
+		content = model.CurrentWindow.Render(&model)
 	}
 
-	// Render centered base panel
-	basePanel := model.CurrentWindow.Render(&model)
-	return lg.Place(model.width, model.height, lg.Center, lg.Center, basePanel)
+	view := tea.NewView(lg.Place(model.width, model.height, lg.Center, lg.Center, content))
+	view.AltScreen = true
+
+	return view
 }
 
 // tick returns a command that sends a time.Time every second to drive UI updates.
+// The chain has to keep running even off the board screen: the renderer only
+// repaints in response to messages, so dropping it would freeze the game clock.
 func tick() tea.Cmd {
 	return tea.Tick(time.Second, func(t time.Time) tea.Msg { return t })
 }

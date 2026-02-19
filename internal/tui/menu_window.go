@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 )
 
 type menuOption int
@@ -125,7 +125,7 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 			}
 		}
 
-	case "enter", " ":
+	case "enter", "space":
 		switch window.Choice {
 		case startGame:
 			model.newGame()

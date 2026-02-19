@@ -7,8 +7,8 @@ mine_char: "X"
 
 # Colors
 fg_color: "#c0caf5"
-selected_color: "#7AA2F7EE"
-border_color: "#F7768FEE"
+selected_color: "#7AA2F7"
+border_color: "#F7768F"
 
 # Square styles
 even_square_style:
@@ -21,10 +21,10 @@ flagged_square_style:
   fg_color: "#FFD580"
 
 mined_square_style:
-  fg_color: "#F7768FEE"
+  fg_color: "#F7768F"
 
 exploded_square_style:
-  fg_color: "#F770000"
+  fg_color: "#F77000"
 
 square_mine_hint_style:
   - fg_color: ""

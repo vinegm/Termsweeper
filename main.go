@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 
 	"termsweeper/internal/config"
 	"termsweeper/internal/tui"
@@ -37,7 +37,7 @@ func main() {
 		log.Printf("Could not load config: %v", err)
 	}
 
-	program := tea.NewProgram(tui.New(cfg), tea.WithAltScreen())
+	program := tea.NewProgram(tui.New(cfg))
 	if _, err := program.Run(); err != nil {
 		log.Fatal(err)
 	}
