@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -15,47 +16,128 @@ const (
 	boardChromeHeight = 6 // title + hint + borders + padding
 )
 
+// Board window messages.
+type (
+	// Asks for control to exit the board window.
+	exitBoardMsg struct{}
+
+	// Message carrying a clock tick, tagged with the game generation that armed it.
+	clockTickMsg struct{ tag int }
+)
+
 // Implements the game/board screen and holds its view state.
 type BoardWindow struct {
 	CursorRow int
 	CursorCol int
+
+	theme    *Theme
+	game     *minesweeper.Game
+	settings minesweeper.Settings
+
+	clockTag int
+	ticking  bool
 }
 
-// Initializes a new BoardWindow with the cursor at the top-left corner.
-func NewBoardWindow() *BoardWindow {
-	return &BoardWindow{CursorRow: 0, CursorCol: 0}
+// NewBoardWindow initializes a new BoardWindow.
+//
+//	NOTE: The game is not started until newGame() is called.
+func NewBoardWindow(theme *Theme) *BoardWindow {
+	return &BoardWindow{theme: theme}
 }
 
-func (window *BoardWindow) Render(model *Model) string {
+// NewGame Starts a fresh game from the given settings.
+func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
+	window.CursorRow = 0
+	window.CursorCol = 0
+	window.settings = settings
+	window.game = minesweeper.New(settings)
+
+	window.clockTag++
+	window.ticking = false
+}
+
+func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		if cmd := window.handleKey(strings.ToLower(msg.String())); cmd != nil {
+			return window, cmd
+		}
+
+		return window, window.startClock()
+
+	case clockTickMsg:
+		if msg.tag != window.clockTag {
+			return window, nil
+		}
+
+		if !window.game.Is(minesweeper.Playing) {
+			window.ticking = false
+			return window, nil
+		}
+
+		return window, clockTick(window.clockTag)
+	}
+
+	return window, nil
+}
+
+func (window *BoardWindow) View() string {
 	var sb strings.Builder
 
-	sb.WriteString(model.theme.titleStyle.Render("Termsweeper"))
+	sb.WriteString(window.theme.titleStyle.Render("Termsweeper"))
 	sb.WriteString("\n")
-	sb.WriteString(model.theme.textStyle.Render(getHint(model)))
+	sb.WriteString(window.theme.textStyle.Render(window.hint()))
 	sb.WriteString("\n\n")
 
-	for row := range model.game.Rows() {
-		for col := range model.game.Cols() {
-			cell := model.game.Cell(row, col)
-			char := model.theme.cellChar(cell)
+	for row := range window.game.Rows() {
+		for col := range window.game.Cols() {
+			cell := window.game.Cell(row, col)
+			char := window.theme.cellChar(cell)
 
 			isCursorRow := window.CursorRow == row
 			isCursorCol := window.CursorCol == col
 			isSelectedCell := isCursorRow && isCursorCol
-			style := model.theme.cellStyle(cell, isSelectedCell)
+			style := window.theme.cellStyle(cell, isSelectedCell)
 
 			sb.WriteString(style.Render(char + " "))
 		}
 		sb.WriteString("\n")
 	}
 
-	return model.theme.windowStyle.Render(sb.String())
+	return window.theme.windowStyle.Render(sb.String())
 }
 
-func (window *BoardWindow) HandleInput(model *Model, msg string) tea.Cmd {
-	game := model.game
+func (window *BoardWindow) MinSize() (int, int) {
+	game := window.game
 
-	switch msg {
+	boardWidth := game.Cols() * 2 // char + space
+	minWidth := boardWidth + boardChromeWidth
+	minHeight := game.Rows() + boardChromeHeight
+
+	return minWidth, minHeight
+}
+
+func maxBoardSize(width, height int) (rows, cols int) {
+	return height - boardChromeHeight, (width - boardChromeWidth) / 2
+}
+
+func (window *BoardWindow) hint() string {
+	switch window.game.State() {
+	case minesweeper.Won:
+		return fmt.Sprintf("You won! Time: %s", window.game.FormattedTime())
+
+	case minesweeper.Lost:
+		return fmt.Sprintf("You lost! Time: %s", window.game.FormattedTime())
+
+	default:
+		return fmt.Sprintf("Flags: %d  Time: %s", window.game.FlagsRemaining(), window.game.FormattedTime())
+	}
+}
+
+func (window *BoardWindow) handleKey(key string) tea.Cmd {
+	game := window.game
+
+	switch key {
 	case "up", "k":
 		if window.CursorRow == 0 {
 			window.CursorRow = game.Rows() - 1
@@ -91,49 +173,29 @@ func (window *BoardWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		game.ToggleFlag(window.CursorRow, window.CursorCol)
 
 	case "r":
-		window.reset(model)
+		window.NewGame(window.settings)
 
 	case "q":
-		window.reset(model)
-		model.CurrentWindow = model.MenuWin
+		return func() tea.Msg { return exitBoardMsg{} }
 	}
 
 	return nil
 }
 
-// Starts a fresh board with the cursor back at the top-left corner.
-func (window *BoardWindow) reset(model *Model) {
-	window.CursorRow = 0
-	window.CursorCol = 0
-
-	model.newGame()
-}
-
-func (window *BoardWindow) MinSize(model *Model) (int, int) {
-	game := model.game
-
-	boardWidth := game.Cols() * 2 // char + space
-	minWidth := boardWidth + boardChromeWidth
-	minHeight := game.Rows() + boardChromeHeight
-
-	return minWidth, minHeight
-}
-
-// Largest board that still fits in the given terminal size. Inverse of MinSize.
-func maxBoardSize(width, height int) (rows, cols int) {
-	return height - boardChromeHeight, (width - boardChromeWidth) / 2
-}
-
-// Returns a hint string based on the current game state.
-func getHint(model *Model) string {
-	switch model.game.State() {
-	case minesweeper.Won:
-		return fmt.Sprintf("You won! Time: %s", model.game.FormattedTime())
-
-	case minesweeper.Lost:
-		return fmt.Sprintf("You lost! Time: %s", model.game.FormattedTime())
-
-	default:
-		return fmt.Sprintf("Flags: %d  Time: %s", model.game.FlagsRemaining(), model.game.FormattedTime())
+func (window *BoardWindow) startClock() tea.Cmd {
+	if window.ticking || !window.game.Is(minesweeper.Playing) {
+		return nil
 	}
+
+	window.ticking = true
+
+	return clockTick(window.clockTag)
+}
+
+func clockTick(tag int) tea.Cmd {
+	notifyTick := func(time.Time) tea.Msg {
+		return clockTickMsg{tag: tag}
+	}
+
+	return tea.Tick(time.Second, notifyTick)
 }

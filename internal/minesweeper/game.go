@@ -42,16 +42,21 @@ const (
 	PlayerTurn = Playing | FirstMove
 )
 
+// Settings for the game board.
+type Settings struct {
+	Rows  int
+	Cols  int
+	Mines int
+}
+
 // Game state.
 type Game struct {
 	Timer
+	settings Settings
 
 	board [][]Cell
-	rows  int
-	cols  int
 	state GameState // bitmasked state of the game
 
-	numMines    int // mines on the board
 	usedFlags   int // flags used by the player
 	numRevealed int // revealed cells count
 }
@@ -60,10 +65,11 @@ func (game *Game) Is(state GameState) bool {
 	return game.state&state != 0
 }
 
-func New(numRows, numCols, numMines int) *Game {
-	board := make([][]Cell, numRows)
+// New initializes a new game with the given settings.
+func New(settings Settings) *Game {
+	board := make([][]Cell, settings.Rows)
 	for i := range board {
-		board[i] = make([]Cell, numCols)
+		board[i] = make([]Cell, settings.Cols)
 
 		for j := range board[i] {
 			if (i+j)%2 == 1 {
@@ -74,17 +80,15 @@ func New(numRows, numCols, numMines int) *Game {
 
 	return &Game{
 		Timer:    Timer{},
+		settings: settings,
 		board:    board,
-		rows:     numRows,
-		cols:     numCols,
-		numMines: numMines,
 		state:    FirstMove,
 	}
 }
 
 // Board dimensions.
-func (game *Game) Rows() int { return game.rows }
-func (game *Game) Cols() int { return game.cols }
+func (game *Game) Rows() int { return game.settings.Rows }
+func (game *Game) Cols() int { return game.settings.Cols }
 
 // Returns the cell at the given coordinates.
 func (game *Game) Cell(row, col int) Cell { return game.board[row][col] }
@@ -94,8 +98,8 @@ func (game *Game) State() GameState { return game.state }
 
 // checks if the coordinates are within the game board.
 func (game *Game) inBounds(row, col int) bool {
-	inRow := row >= 0 && row < game.rows
-	inCol := col >= 0 && col < game.cols
+	inRow := row >= 0 && row < game.settings.Rows
+	inCol := col >= 0 && col < game.settings.Cols
 	return inRow && inCol
 }
 
@@ -112,9 +116,9 @@ func (game *Game) forEachNeighbour(row, col int, fn func(r, c int)) {
 // Randomly places mines on the board, avoiding the first revealed cell.
 func (game *Game) placeMines(firstR, firstC int) {
 	placed := 0
-	for placed < game.numMines {
-		row := rand.Intn(game.rows)
-		col := rand.Intn(game.cols)
+	for placed < game.settings.Mines {
+		row := rand.Intn(game.settings.Rows)
+		col := rand.Intn(game.settings.Cols)
 		if game.board[row][col].Is(Mined) {
 			continue
 		}
@@ -243,7 +247,7 @@ func (game *Game) revealAround(row, col int) {
 
 // Checks if all non-mine cells have been revealed.
 func (game *Game) checkWin() {
-	if game.numRevealed >= game.cols*game.rows-game.numMines {
+	if game.numRevealed >= game.settings.Cols*game.settings.Rows-game.settings.Mines {
 		game.state = Won
 		game.StopTimer()
 	}
@@ -271,5 +275,5 @@ func (game *Game) ToggleFlag(row, col int) {
 
 // Number of flags remaining.
 func (game *Game) FlagsRemaining() int {
-	return game.numMines - game.usedFlags
+	return game.settings.Mines - game.usedFlags
 }

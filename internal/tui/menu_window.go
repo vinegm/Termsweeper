@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+
+	"termsweeper/internal/minesweeper"
 )
 
 type menuOption int
@@ -17,64 +19,102 @@ const (
 	quit
 )
 
-// Implements the menu screen and holds its view state.
+// Asks for control to start the game with these settings.
+type startGameMsg struct{ settings minesweeper.Settings }
+
+// MenuWindow is the main menu window for the game, allowing
+// the user to start a new game or change settings.
 type MenuWindow struct {
-	Choice menuOption
+	Choice   menuOption
+	Settings minesweeper.Settings
 
-	minWidth  int
-	minHeight int
+	theme         *Theme
+	width, height int
+	minWidth      int
+	minHeight     int
 }
 
-// Initializes a new MenuWindow with the first menu item selected and minimum size set.
-func NewMenuWindow() *MenuWindow {
-	return &MenuWindow{Choice: startGame, minWidth: 30, minHeight: 10}
+// NewMenuWindow creates a new MenuWindow with the provided theme and settings.
+func NewMenuWindow(theme *Theme, settings minesweeper.Settings) *MenuWindow {
+	return &MenuWindow{
+		Choice:    startGame,
+		Settings:  settings,
+		theme:     theme,
+		minWidth:  30,
+		minHeight: 10,
+	}
 }
 
-// The menu lines, in the order the menuOption constants declare them.
-func menuItems(model *Model) []string {
-	rows := model.settings.Rows
-	cols := model.settings.Cols
-	mines := model.settings.Mines
+func (window *MenuWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		window.width = msg.Width
+		window.height = msg.Height
 
+	case tea.KeyPressMsg:
+		return window, window.handleKey(strings.ToLower(msg.String()))
+	}
+
+	return window, nil
+}
+
+// View renders the menu window as a string.
+func (window *MenuWindow) View() string {
+	var sb strings.Builder
+
+	sb.WriteString(window.theme.titleStyle.Render(getMenuTitle()))
+	sb.WriteString("\n")
+
+	for i, it := range window.items() {
+		sb.WriteString("\n")
+		if window.Choice == menuOption(i) {
+			sb.WriteString(window.theme.selectedMenuTextStyle.Render(it))
+			continue
+		}
+
+		sb.WriteString(window.theme.textStyle.Render(it))
+	}
+
+	return window.theme.windowStyle.Render(sb.String())
+}
+
+// MinSize returns the minimum width and height of the menu window.
+func (window *MenuWindow) MinSize() (int, int) {
+	return window.minWidth, window.minHeight
+}
+
+func getMenuTitle() string {
+	art := `
+▗▄▄▄▖▗▞▀▚▖ ▄▄▄ ▄▄▄▄   ▗▄▄▖▄   ▄ ▗▞▀▚▖▗▞▀▚▖▄▄▄▄  ▗▞▀▚▖ ▄▄▄
+  █  ▐▛▀▀▘█    █ █ █ ▐▌   █ ▄ █ ▐▛▀▀▘▐▛▀▀▘█   █ ▐▛▀▀▘█   
+  █  ▝▚▄▄▖█    █   █  ▝▀▚▖█▄█▄█ ▝▚▄▄▖▝▚▄▄▖█▄▄▄▀ ▝▚▄▄▖█   
+  █                  ▗▄▄▞▘                █              
+                                          ▀              `
+
+	return art[1:] // Remove leading newline
+}
+
+func (window *MenuWindow) items() []string {
 	return []string{
 		"Start Game",
-		"Board Rows: " + fmt.Sprintf("%d", rows),
-		"Board Cols: " + fmt.Sprintf("%d", cols),
-		"Mines: " + fmt.Sprintf("%d", mines),
+		"Board Rows: " + fmt.Sprintf("%d", window.Settings.Rows),
+		"Board Cols: " + fmt.Sprintf("%d", window.Settings.Cols),
+		"Mines: " + fmt.Sprintf("%d", window.Settings.Mines),
 		"Quit",
 	}
 }
 
-func (window *MenuWindow) Render(model *Model) string {
-	var sb strings.Builder
+func (window *MenuWindow) handleKey(key string) tea.Cmd {
+	settings := &window.Settings
 
-	sb.WriteString(model.theme.titleStyle.Render(getMenuTitle()))
-	sb.WriteString("\n")
-
-	for i, it := range menuItems(model) {
-		sb.WriteString("\n")
-		if window.Choice == menuOption(i) {
-			sb.WriteString(model.theme.selectedMenuTextStyle.Render(it))
-			continue
-		}
-
-		sb.WriteString(model.theme.textStyle.Render(it))
-	}
-
-	return model.theme.windowStyle.Render(sb.String())
-}
-
-func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
-	settings := &model.settings
-
-	switch msg {
+	switch key {
 	case "up", "k":
 		if window.Choice > 0 {
 			window.Choice--
 		}
 
 	case "down", "j":
-		if window.Choice < menuOption(len(menuItems(model))-1) {
+		if window.Choice < menuOption(len(window.items())-1) {
 			window.Choice++
 		}
 
@@ -84,6 +124,7 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 			if settings.Rows > 5 {
 				settings.Rows--
 				max := settings.Rows * settings.Cols
+
 				if settings.Mines >= max {
 					settings.Mines = max - 1
 				}
@@ -105,7 +146,7 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 		}
 
 	case "right":
-		maxRows, maxCols := maxBoardSize(model.width, model.height)
+		maxRows, maxCols := maxBoardSize(window.width, window.height)
 
 		switch window.Choice {
 		case boardRows:
@@ -128,8 +169,10 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 	case "enter", "space":
 		switch window.Choice {
 		case startGame:
-			model.newGame()
-			model.CurrentWindow = model.BoardWin
+			chosen := window.Settings
+			return func() tea.Msg {
+				return startGameMsg{settings: chosen}
+			}
 
 		case quit:
 			return tea.Quit
@@ -140,17 +183,4 @@ func (window *MenuWindow) HandleInput(model *Model, msg string) tea.Cmd {
 	}
 
 	return nil
-}
-
-func (window *MenuWindow) MinSize(_ *Model) (int, int) { return window.minWidth, window.minHeight }
-
-func getMenuTitle() string {
-	art := `
-▗▄▄▄▖▗▞▀▚▖ ▄▄▄ ▄▄▄▄   ▗▄▄▖▄   ▄ ▗▞▀▚▖▗▞▀▚▖▄▄▄▄  ▗▞▀▚▖ ▄▄▄
-  █  ▐▛▀▀▘█    █ █ █ ▐▌   █ ▄ █ ▐▛▀▀▘▐▛▀▀▘█   █ ▐▛▀▀▘█   
-  █  ▝▚▄▄▖█    █   █  ▝▀▚▖█▄█▄█ ▝▚▄▄▖▝▚▄▄▖█▄▄▄▀ ▝▚▄▄▖█   
-  █                  ▗▄▄▞▘                █              
-                                          ▀              `
-
-	return art[1:] // Remove leading newline
 }

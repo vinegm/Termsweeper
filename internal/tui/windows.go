@@ -2,9 +2,10 @@ package tui
 
 import tea "charm.land/bubbletea/v2"
 
-// Interface that holds methods to handle rendering and input for different windows.
+// Window is the interface that holds methods to handle
+// updates and rendering for different windows.
 type Window interface {
-	Render(model *Model) string
-	HandleInput(model *Model, msg string) tea.Cmd
-	MinSize(model *Model) (int, int)
+	Update(msg tea.Msg) (Window, tea.Cmd)
+	View() string
+	MinSize() (int, int)
 }

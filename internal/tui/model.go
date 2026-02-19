@@ -7,47 +7,51 @@ import (
 	"termsweeper/internal/minesweeper"
 )
 
-// Board settings the player can change from the menu. Seeded from the
-// configuration, session-local from then on.
-type Settings struct {
-	Rows  int
-	Cols  int
-	Mines int
-}
-
-// Bubble Tea application state.
+// Model represents the state of the application.
 type Model struct {
-	game          *minesweeper.Game // game state
-	settings      Settings          // board settings
-	theme         *Theme            // resolved styles
-	width, height int               // terminal dimensions
+	theme         *Theme
+	width, height int
 
-	CurrentWindow Window
-	MenuWin       *MenuWindow
-	BoardWin      *BoardWindow
+	currentWindow Window
+	menu          *MenuWindow
+	board         *BoardWindow
 }
 
-func (model Model) Init() tea.Cmd {
-	return tick()
-}
-
-// Creates a new model with initial state.
+// New creates a new model with initial state.
 func New(cfg config.Config) Model {
-	menuWinInst := NewMenuWindow()
-
-	model := Model{
-		settings:      Settings{Rows: cfg.BoardRows, Cols: cfg.BoardCols, Mines: cfg.MineCount},
-		theme:         NewTheme(cfg),
-		CurrentWindow: menuWinInst,
-		MenuWin:       menuWinInst,
-		BoardWin:      NewBoardWindow(),
+	theme := NewTheme(cfg)
+	gameSettings := minesweeper.Settings{
+		Rows:  cfg.BoardRows,
+		Cols:  cfg.BoardCols,
+		Mines: cfg.MineCount,
 	}
-	model.newGame()
 
-	return model
+	menu := NewMenuWindow(theme, gameSettings)
+
+	return Model{
+		theme:         theme,
+		currentWindow: menu,
+		menu:          menu,
+		board:         NewBoardWindow(theme),
+	}
 }
 
-// Replaces the board with a fresh one built from the current settings.
-func (model *Model) newGame() {
-	model.game = minesweeper.New(model.settings.Rows, model.settings.Cols, model.settings.Mines)
+// Init initializes the model and returns an initial command.
+//
+//	WARN: This function is required by the Bubble Tea framework.
+func (model Model) Init() tea.Cmd {
+	return nil
+}
+
+// switchWindow switches the current window to the recieved one.
+func (model Model) switchWindow(window Window) (Model, tea.Cmd) {
+	var cmd tea.Cmd
+	model.currentWindow, cmd = window.Update(
+		tea.WindowSizeMsg{
+			Width:  model.width,
+			Height: model.height,
+		},
+	)
+
+	return model, cmd
 }
