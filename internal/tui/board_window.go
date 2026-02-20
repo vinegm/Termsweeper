@@ -38,10 +38,9 @@ type BoardWindow struct {
 	offsetCol int
 
 	theme    *Theme
+	screen   *Screen
 	game     *minesweeper.Game
 	settings minesweeper.Settings
-
-	width, height int
 
 	clockTag int
 	ticking  bool
@@ -50,8 +49,8 @@ type BoardWindow struct {
 // NewBoardWindow initializes a new BoardWindow.
 //
 //	NOTE: The game is not started until newGame() is called.
-func NewBoardWindow(theme *Theme) *BoardWindow {
-	return &BoardWindow{theme: theme}
+func NewBoardWindow(theme *Theme, screen *Screen) *BoardWindow {
+	return &BoardWindow{theme: theme, screen: screen}
 }
 
 // NewGame Starts a fresh game from the given settings.
@@ -69,14 +68,8 @@ func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
 
 func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		window.width = msg.Width
-		window.height = msg.Height
-		window.scrollToCursor()
-
 	case tea.KeyPressMsg:
 		cmd := window.handleKey(strings.ToLower(msg.String()))
-		window.scrollToCursor()
 
 		if cmd != nil {
 			return window, cmd
@@ -101,6 +94,8 @@ func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 }
 
 func (window *BoardWindow) View() string {
+	window.scrollToCursor()
+
 	visibleRows, visibleCols := window.viewport()
 	clipped := window.clippedEdges(visibleRows, visibleCols)
 
@@ -175,8 +170,8 @@ func (window *BoardWindow) MinSize() (int, int) {
 
 // viewport returns the number of rows and columns visible.
 func (window *BoardWindow) viewport() (rows, cols int) {
-	rows = clamp(window.height-boardChromeHeight, 1, window.game.Rows())
-	cols = clamp((window.width-boardChromeWidth)/2, 1, window.game.Cols())
+	rows = clamp(window.screen.Height-boardChromeHeight, 1, window.game.Rows())
+	cols = clamp((window.screen.Width-boardChromeWidth)/2, 1, window.game.Cols())
 
 	return rows, cols
 }

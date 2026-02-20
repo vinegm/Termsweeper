@@ -9,8 +9,8 @@ import (
 
 // Model represents the state of the application.
 type Model struct {
-	theme         *Theme
-	width, height int
+	theme  *Theme
+	screen *Screen
 
 	currentWindow Window
 	menu          *MenuWindow
@@ -20,6 +20,7 @@ type Model struct {
 // New creates a new model with initial state.
 func New(cfg config.Config) Model {
 	theme := NewTheme(cfg)
+	screen := &Screen{}
 	gameSettings := minesweeper.Settings{
 		Rows:  cfg.BoardRows,
 		Cols:  cfg.BoardCols,
@@ -30,9 +31,10 @@ func New(cfg config.Config) Model {
 
 	return Model{
 		theme:         theme,
+		screen:        screen,
 		currentWindow: menu,
 		menu:          menu,
-		board:         NewBoardWindow(theme),
+		board:         NewBoardWindow(theme, screen),
 	}
 }
 
@@ -41,17 +43,4 @@ func New(cfg config.Config) Model {
 //	WARN: This function is required by the Bubble Tea framework.
 func (model Model) Init() tea.Cmd {
 	return nil
-}
-
-// switchWindow switches the current window to the recieved one.
-func (model Model) switchWindow(window Window) (Model, tea.Cmd) {
-	var cmd tea.Cmd
-	model.currentWindow, cmd = window.Update(
-		tea.WindowSizeMsg{
-			Width:  model.width,
-			Height: model.height,
-		},
-	)
-
-	return model, cmd
 }
