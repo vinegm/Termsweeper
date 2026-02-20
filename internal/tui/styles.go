@@ -9,6 +9,14 @@ import (
 	"termsweeper/internal/minesweeper"
 )
 
+// Glyphs marking a window edge the board continues past.
+const (
+	arrowUp    = "▲"
+	arrowDown  = "▼"
+	arrowLeft  = "◀"
+	arrowRight = "▶"
+)
+
 // Holds every style the windows render with, resolved from the configuration.
 type Theme struct {
 	config config.Config
@@ -26,6 +34,7 @@ type Theme struct {
 
 	squareMineHintColor []lg.Style
 
+	arrowStyle  lg.Style
 	windowStyle lg.Style
 }
 
@@ -69,6 +78,10 @@ func (theme *Theme) setStyles() {
 	for i, hintConfig := range theme.config.SquareMineHintStyle {
 		theme.squareMineHintColor[i] = styleFromConfig(genericStyle, hintConfig)
 	}
+
+	theme.arrowStyle = lg.NewStyle().
+		Foreground(lg.Color(theme.config.BorderColor)).
+		Background(lg.Color(theme.config.BgColor))
 
 	theme.windowStyle = lg.NewStyle().
 		Background(lg.Color(theme.config.BgColor)).

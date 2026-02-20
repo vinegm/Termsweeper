@@ -4,13 +4,6 @@ import (
 	"math/rand"
 )
 
-// neighbor offsets
-var neighbors = [][2]int{
-	{-1, -1}, {-1, 0}, {-1, 1},
-	{0, -1}, {0, 1},
-	{1, -1}, {1, 0}, {1, 1},
-}
-
 type CellState int
 
 const (
@@ -58,6 +51,8 @@ type Game struct {
 	state GameState // bitmasked state of the game
 
 	usedFlags   int // flags used by the player
+	numCells    int // total cells count
+	numSafe     int // non-mine cells count
 	numRevealed int // revealed cells count
 }
 
@@ -78,11 +73,14 @@ func New(settings Settings) *Game {
 		}
 	}
 
+	numCells := settings.Rows * settings.Cols
 	return &Game{
 		Timer:    Timer{},
 		settings: settings,
 		board:    board,
 		state:    FirstMove,
+		numCells: numCells,
+		numSafe:  numCells - settings.Mines,
 	}
 }
 
@@ -102,10 +100,16 @@ func (game *Game) inBounds(row, col int) bool {
 
 // Calls fn for each valid neighbor of the cell.
 func (game *Game) forEachNeighbour(row, col int, fn func(r, c int)) {
-	for _, offset := range neighbors {
-		nr, nc := row+offset[0], col+offset[1]
-		if game.inBounds(nr, nc) {
-			fn(nr, nc)
+	for i := -1; i <= 1; i++ {
+		for j := -1; j <= 1; j++ {
+			if i == 0 && j == 0 {
+				continue
+			}
+
+			nr, nc := row+i, col+j
+			if game.inBounds(nr, nc) {
+				fn(nr, nc)
+			}
 		}
 	}
 }
@@ -248,7 +252,7 @@ func (game *Game) checkWin() {
 		return
 	}
 
-	if game.numRevealed >= game.settings.Cols*game.settings.Rows-game.settings.Mines {
+	if game.numRevealed >= game.numSafe {
 		game.state = Won
 		game.StopTimer()
 	}

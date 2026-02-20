@@ -28,10 +28,9 @@ type MenuWindow struct {
 	Choice   menuOption
 	Settings minesweeper.Settings
 
-	theme         *Theme
-	width, height int
-	minWidth      int
-	minHeight     int
+	theme     *Theme
+	minWidth  int
+	minHeight int
 }
 
 // NewMenuWindow creates a new MenuWindow with the provided theme and settings.
@@ -47,10 +46,6 @@ func NewMenuWindow(theme *Theme, settings minesweeper.Settings) *MenuWindow {
 
 func (window *MenuWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.WindowSizeMsg:
-		window.width = msg.Width
-		window.height = msg.Height
-
 	case tea.KeyPressMsg:
 		return window, window.handleKey(strings.ToLower(msg.String()))
 	}
@@ -146,18 +141,12 @@ func (window *MenuWindow) handleKey(key string) tea.Cmd {
 		}
 
 	case "right":
-		maxRows, maxCols := maxBoardSize(window.width, window.height)
-
 		switch window.Choice {
 		case boardRows:
-			if settings.Rows < maxRows {
-				settings.Rows++
-			}
+			settings.Rows++
 
 		case boardCols:
-			if settings.Cols < maxCols {
-				settings.Cols++
-			}
+			settings.Cols++
 
 		case mineCount:
 			max := settings.Rows * settings.Cols

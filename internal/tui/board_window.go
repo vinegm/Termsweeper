@@ -6,15 +6,18 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
+	lg "charm.land/lipgloss/v2"
 
 	"termsweeper/internal/minesweeper"
 )
 
 // Space the board window needs on top of the board itself.
 const (
-	boardChromeWidth  = 4 // borders + padding
-	boardChromeHeight = 6 // title + hint + borders + padding
+	boardChromeWidth  = 6 // borders + padding + arrow gutters
+	boardChromeHeight = 6 // title + hint + arrow gutters + borders
 )
+
+const boardTitle = "Termsweeper"
 
 // Board window messages.
 type (
@@ -30,9 +33,15 @@ type BoardWindow struct {
 	CursorRow int
 	CursorCol int
 
+	// Board cell shown at the top-left of the window.
+	offsetRow int
+	offsetCol int
+
 	theme    *Theme
 	game     *minesweeper.Game
 	settings minesweeper.Settings
+
+	width, height int
 
 	clockTag int
 	ticking  bool
@@ -49,6 +58,8 @@ func NewBoardWindow(theme *Theme) *BoardWindow {
 func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
 	window.CursorRow = 0
 	window.CursorCol = 0
+	window.offsetRow = 0
+	window.offsetCol = 0
 	window.settings = settings
 	window.game = minesweeper.New(settings)
 
@@ -58,8 +69,16 @@ func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
 
 func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		window.width = msg.Width
+		window.height = msg.Height
+		window.scrollToCursor()
+
 	case tea.KeyPressMsg:
-		if cmd := window.handleKey(strings.ToLower(msg.String())); cmd != nil {
+		cmd := window.handleKey(strings.ToLower(msg.String()))
+		window.scrollToCursor()
+
+		if cmd != nil {
 			return window, cmd
 		}
 
@@ -82,15 +101,27 @@ func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 }
 
 func (window *BoardWindow) View() string {
+	visibleRows, visibleCols := window.viewport()
+	clipped := window.clippedEdges(visibleRows, visibleCols)
+
 	var sb strings.Builder
 
-	sb.WriteString(window.theme.titleStyle.Render("Termsweeper"))
+	sb.WriteString(window.theme.titleStyle.Render(boardTitle))
 	sb.WriteString("\n")
 	sb.WriteString(window.theme.textStyle.Render(window.hint()))
-	sb.WriteString("\n\n")
+	sb.WriteString("\n")
+	sb.WriteString(window.gutter(clipped.top, arrowUp))
+	sb.WriteString("\n")
 
-	for row := range window.game.Rows() {
-		for col := range window.game.Cols() {
+	// The side arrows sit halfway down the grid, next to the outermost columns.
+	arrowRow := window.offsetRow + visibleRows/2
+
+	for row := window.offsetRow; row < window.offsetRow+visibleRows; row++ {
+		onArrowRow := row == arrowRow
+
+		sb.WriteString(window.gutter(clipped.left && onArrowRow, arrowLeft))
+
+		for col := window.offsetCol; col < window.offsetCol+visibleCols; col++ {
 			cell := window.game.Cell(row, col)
 			char := window.theme.cellChar(cell)
 
@@ -101,24 +132,82 @@ func (window *BoardWindow) View() string {
 
 			sb.WriteString(style.Render(char + " "))
 		}
+
+		sb.WriteString(window.gutter(clipped.right && onArrowRow, arrowRight))
 		sb.WriteString("\n")
 	}
+
+	sb.WriteString(window.gutter(clipped.bottom, arrowDown))
 
 	return window.theme.windowStyle.Render(sb.String())
 }
 
-func (window *BoardWindow) MinSize() (int, int) {
-	game := window.game
-
-	boardWidth := game.Cols() * 2 // char + space
-	minWidth := boardWidth + boardChromeWidth
-	minHeight := game.Rows() + boardChromeHeight
-
-	return minWidth, minHeight
+// Window edges the board runs past, i.e. the ones with more board behind them.
+type clippedEdges struct {
+	top, right, bottom, left bool
 }
 
-func maxBoardSize(width, height int) (rows, cols int) {
-	return height - boardChromeHeight, (width - boardChromeWidth) / 2
+func (window *BoardWindow) clippedEdges(visibleRows, visibleCols int) clippedEdges {
+	return clippedEdges{
+		top:    window.offsetRow > 0,
+		bottom: window.offsetRow+visibleRows < window.game.Rows(),
+		left:   window.offsetCol > 0,
+		right:  window.offsetCol+visibleCols < window.game.Cols(),
+	}
+}
+
+// gutter renders one cell of gutter: the arrow when the board continues past that
+// edge, a blank otherwise. Always one cell wide, so the grid never shifts as the
+// arrows come and go.
+func (window *BoardWindow) gutter(showArrow bool, arrow string) string {
+	if !showArrow {
+		arrow = " "
+	}
+
+	return window.theme.arrowStyle.Render(arrow)
+}
+
+func (window *BoardWindow) MinSize() (int, int) {
+	contentWidth := max(2, lg.Width(boardTitle), lg.Width(window.hint()))
+
+	return contentWidth + boardChromeWidth, 1 + boardChromeHeight
+}
+
+// viewport returns the number of rows and columns visible.
+func (window *BoardWindow) viewport() (rows, cols int) {
+	rows = clamp(window.height-boardChromeHeight, 1, window.game.Rows())
+	cols = clamp((window.width-boardChromeWidth)/2, 1, window.game.Cols())
+
+	return rows, cols
+}
+
+// scrollToCursor moves the viewport to keep the cursor visible.
+func (window *BoardWindow) scrollToCursor() {
+	if window.game == nil {
+		return
+	}
+
+	visibleRows, visibleCols := window.viewport()
+
+	window.offsetRow = scrollOffset(window.offsetRow, window.CursorRow, visibleRows, window.game.Rows())
+	window.offsetCol = scrollOffset(window.offsetCol, window.CursorCol, visibleCols, window.game.Cols())
+}
+
+// scrollOffset returns the new offset, which may be the same as the old one.
+func scrollOffset(offset, cursor, visible, total int) int {
+	if cursor < offset {
+		offset = cursor
+	}
+
+	if cursor >= offset+visible {
+		offset = cursor - visible + 1
+	}
+
+	return clamp(offset, 0, total-visible)
+}
+
+func clamp(value, low, high int) int {
+	return min(max(value, low), high)
 }
 
 func (window *BoardWindow) hint() string {

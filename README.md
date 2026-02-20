@@ -19,6 +19,7 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 - Classic Minesweeper mechanics: reveal, flag, and auto-reveal
 - Timer, win/loss detection, and keyboard controls
 - Configurable board size, mine count, and display characters
+- Boards larger than the terminal scroll with the cursor, with a dashed border on the edges the board continues past
 - Multiple color themes (see the Themes directory)
 
 ## Getting Started
