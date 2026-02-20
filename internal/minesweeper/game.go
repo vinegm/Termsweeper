@@ -27,7 +27,7 @@ type Cell struct {
 	Adj   int       // number of adjacent mines
 }
 
-func (cell Cell) Is(state CellState) bool {
+func (cell Cell) StateIs(state CellState) bool {
 	return cell.State&state != 0
 }
 
@@ -61,7 +61,7 @@ type Game struct {
 	numRevealed int // revealed cells count
 }
 
-func (game *Game) Is(state GameState) bool {
+func (game *Game) StateIs(state GameState) bool {
 	return game.state&state != 0
 }
 
@@ -93,9 +93,6 @@ func (game *Game) Cols() int { return game.settings.Cols }
 // Returns the cell at the given coordinates.
 func (game *Game) Cell(row, col int) Cell { return game.board[row][col] }
 
-// Returns the bitmasked state of the game.
-func (game *Game) State() GameState { return game.state }
-
 // checks if the coordinates are within the game board.
 func (game *Game) inBounds(row, col int) bool {
 	inRow := row >= 0 && row < game.settings.Rows
@@ -119,7 +116,7 @@ func (game *Game) placeMines(firstR, firstC int) {
 	for placed < game.settings.Mines {
 		row := rand.Intn(game.settings.Rows)
 		col := rand.Intn(game.settings.Cols)
-		if game.board[row][col].Is(Mined) {
+		if game.board[row][col].StateIs(Mined) {
 			continue
 		}
 
@@ -129,7 +126,7 @@ func (game *Game) placeMines(firstR, firstC int) {
 
 		game.board[row][col].State |= Mined
 		game.forEachNeighbour(row, col, func(nr, nc int) {
-			if !game.board[nr][nc].Is(Mined) {
+			if !game.board[nr][nc].StateIs(Mined) {
 				game.board[nr][nc].Adj++
 			}
 		})
@@ -142,7 +139,7 @@ func (game *Game) placeMines(firstR, firstC int) {
 func (game *Game) revealAllMines() {
 	for row := range game.board {
 		for col := range game.board[row] {
-			if game.board[row][col].Is(Mined) {
+			if game.board[row][col].StateIs(Mined) {
 				game.board[row][col].State |= Revealed
 			}
 		}
@@ -153,22 +150,22 @@ func (game *Game) revealAllMines() {
 // handles the first move logic and win/loss conditions.
 // and calls the appropriate reveal functions based on the cell state.
 func (game *Game) Reveal(row, col int) {
-	if !game.Is(PlayerTurn) || !game.inBounds(row, col) {
+	if !game.StateIs(PlayerTurn) || !game.inBounds(row, col) {
 		return
 	}
 
-	if game.state == FirstMove {
+	if game.StateIs(FirstMove) {
 		game.placeMines(row, col)
 		game.state = Playing
 		game.StartTimer()
 	}
 
 	cell := &game.board[row][col]
-	if cell.Is(Flagged) {
+	if cell.StateIs(Flagged) {
 		return
 	}
 
-	if cell.Is(Revealed) {
+	if cell.StateIs(Revealed) {
 		game.revealAround(row, col)
 	} else {
 		game.revealSingleCell(row, col)
@@ -189,13 +186,13 @@ func (game *Game) revealSingleCell(row int, col int) {
 		pending = pending[:last]
 
 		cell := &game.board[row][col]
-		if cell.Is(Revealed) || cell.Is(Flagged) {
+		if cell.StateIs(Revealed) || cell.StateIs(Flagged) {
 			continue
 		}
 
 		game.numRevealed++
 		cell.State |= Revealed
-		if cell.Is(Mined) {
+		if cell.StateIs(Mined) {
 			cell.State |= Exploded
 			game.state = Lost
 			game.StopTimer()
@@ -210,7 +207,7 @@ func (game *Game) revealSingleCell(row int, col int) {
 		// Queues empty neighboring cells.
 		game.forEachNeighbour(row, col, func(nr, nc int) {
 			cell := &game.board[nr][nc]
-			if !cell.Is(Revealed) && !cell.Is(Flagged) {
+			if !cell.StateIs(Revealed) && !cell.StateIs(Flagged) {
 				pending = append(pending, [2]int{nr, nc})
 			}
 		})
@@ -228,7 +225,7 @@ func (game *Game) revealAround(row, col int) {
 	numAdjFlags := 0
 	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
-		if cell.Is(Flagged) {
+		if cell.StateIs(Flagged) {
 			numAdjFlags++
 		}
 	})
@@ -239,7 +236,7 @@ func (game *Game) revealAround(row, col int) {
 
 	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
-		if !cell.Is(Flagged) && !cell.Is(Revealed) {
+		if !cell.StateIs(Flagged) && !cell.StateIs(Revealed) {
 			game.revealSingleCell(nr, nc)
 		}
 	})
@@ -247,6 +244,10 @@ func (game *Game) revealAround(row, col int) {
 
 // Checks if all non-mine cells have been revealed.
 func (game *Game) checkWin() {
+	if !game.StateIs(Playing) {
+		return
+	}
+
 	if game.numRevealed >= game.settings.Cols*game.settings.Rows-game.settings.Mines {
 		game.state = Won
 		game.StopTimer()
@@ -255,17 +256,17 @@ func (game *Game) checkWin() {
 
 // Toggles the flag of the cell at the given coords.
 func (game *Game) ToggleFlag(row, col int) {
-	if !game.Is(PlayerTurn) || !game.inBounds(row, col) {
+	if !game.StateIs(PlayerTurn) || !game.inBounds(row, col) {
 		return
 	}
 
 	cell := &game.board[row][col]
-	if cell.Is(Revealed) {
+	if cell.StateIs(Revealed) {
 		return
 	}
 
 	cell.State ^= Flagged
-	if cell.Is(Flagged) {
+	if cell.StateIs(Flagged) {
 		game.usedFlags++
 		return
 	}

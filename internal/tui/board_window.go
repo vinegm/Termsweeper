@@ -70,7 +70,7 @@ func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
 			return window, nil
 		}
 
-		if !window.game.Is(minesweeper.Playing) {
+		if !window.game.StateIs(minesweeper.Playing) {
 			window.ticking = false
 			return window, nil
 		}
@@ -122,11 +122,11 @@ func maxBoardSize(width, height int) (rows, cols int) {
 }
 
 func (window *BoardWindow) hint() string {
-	switch window.game.State() {
-	case minesweeper.Won:
+	switch {
+	case window.game.StateIs(minesweeper.Won):
 		return fmt.Sprintf("You won! Time: %s", window.game.FormattedTime())
 
-	case minesweeper.Lost:
+	case window.game.StateIs(minesweeper.Lost):
 		return fmt.Sprintf("You lost! Time: %s", window.game.FormattedTime())
 
 	default:
@@ -183,7 +183,7 @@ func (window *BoardWindow) handleKey(key string) tea.Cmd {
 }
 
 func (window *BoardWindow) startClock() tea.Cmd {
-	if window.ticking || !window.game.Is(minesweeper.Playing) {
+	if window.ticking || !window.game.StateIs(minesweeper.Playing) {
 		return nil
 	}
 

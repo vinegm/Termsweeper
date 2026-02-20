@@ -106,7 +106,7 @@ func (theme *Theme) preserveGridBg(style lg.Style, cell minesweeper.Cell, kind s
 		return style
 	}
 
-	if cell.Is(minesweeper.Odd) {
+	if cell.StateIs(minesweeper.Odd) {
 		return style.Background(theme.oddSquareStyle.GetBackground())
 	}
 
@@ -119,18 +119,18 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 		return theme.selectedSquareStyle
 	}
 
-	if cell.Is(minesweeper.Revealed) && cell.Is(minesweeper.Mined) {
-		if cell.Is(minesweeper.Exploded) {
+	if cell.StateIs(minesweeper.Revealed) && cell.StateIs(minesweeper.Mined) {
+		if cell.StateIs(minesweeper.Exploded) {
 			return theme.preserveGridBg(theme.explodedSquareStyle, cell, mineSquare)
 		}
 		return theme.preserveGridBg(theme.minedSquareStyle, cell, mineSquare)
 	}
 
-	if cell.Is(minesweeper.Flagged) {
+	if cell.StateIs(minesweeper.Flagged) {
 		return theme.preserveGridBg(theme.flaggedSquareStyle, cell, flagSquare)
 	}
 
-	if cell.Is(minesweeper.Revealed) {
+	if cell.StateIs(minesweeper.Revealed) {
 		if cell.Adj >= len(theme.config.SquareMineHintStyle) {
 			return theme.textStyle
 		}
@@ -138,7 +138,7 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 		return theme.preserveGridBg(theme.squareMineHintColor[cell.Adj], cell, revealedSquare)
 	}
 
-	if cell.Is(minesweeper.Odd) {
+	if cell.StateIs(minesweeper.Odd) {
 		return theme.oddSquareStyle
 	}
 
@@ -147,8 +147,8 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 
 // Returns the char for a given cell based on its state.
 func (theme *Theme) cellChar(cell minesweeper.Cell) string {
-	if cell.Is(minesweeper.Revealed) {
-		if cell.Is(minesweeper.Mined) {
+	if cell.StateIs(minesweeper.Revealed) {
+		if cell.StateIs(minesweeper.Mined) {
 			return theme.config.MineChar
 		}
 
@@ -159,7 +159,7 @@ func (theme *Theme) cellChar(cell minesweeper.Cell) string {
 		return fmt.Sprintf("%d", cell.Adj)
 	}
 
-	if cell.Is(minesweeper.Flagged) {
+	if cell.StateIs(minesweeper.Flagged) {
 		return theme.config.FlagChar
 	}
 
