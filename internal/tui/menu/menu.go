@@ -29,19 +29,15 @@ type Window struct {
 	Choice   menuOption
 	Settings minesweeper.Settings
 
-	theme     *theme.Theme
-	minWidth  int
-	minHeight int
+	theme *theme.Theme
 }
 
 // New creates a new Window with the provided theme and settings.
 func New(th *theme.Theme, settings minesweeper.Settings) *Window {
 	return &Window{
-		Choice:    startGame,
-		Settings:  settings,
-		theme:     th,
-		minWidth:  30,
-		minHeight: 10,
+		Choice:   startGame,
+		Settings: settings,
+		theme:    th,
 	}
 }
 
@@ -72,11 +68,6 @@ func (window *Window) View(_, _ int) string {
 	}
 
 	return window.theme.WindowStyle.Render(sb.String())
-}
-
-// MinSize returns the minimum width and height of the menu window.
-func (window *Window) MinSize() (int, int) {
-	return window.minWidth, window.minHeight
 }
 
 func getMenuTitle() string {

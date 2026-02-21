@@ -14,12 +14,19 @@ import (
 	"termsweeper/internal/tui/theme"
 )
 
+// Smallest terminal the app renders correctly in.
+//
+//	WARN: Must be able to fit any window.
+const (
+	minWidth  = 61
+	minHeight = 13
+)
+
 // Window is the interface that holds methods to handle
 // updates and rendering for different windows.
 type Window interface {
 	Update(msg tea.Msg) tea.Cmd
 	View(width, height int) string
-	MinSize() (int, int)
 }
 
 // Model represents the state of the application.
@@ -78,20 +85,30 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return model, model.currentWindow.Update(msg)
 }
 
-// Tea view rendering, handles terminal size checks and delegates to the current window.
+// Tea view rendering, handles terminal size checks
+// and delegates to the current window.
 func (model Model) View() tea.View {
-	minWidth, minHeight := model.currentWindow.MinSize()
+	content := model.viewContent()
 
-	var content string
-	if model.width < minWidth || model.height < minHeight {
-		content = fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
-	} else {
-		// Render centered base panel
-		content = model.currentWindow.View(model.width, model.height)
-	}
-
-	view := tea.NewView(lg.Place(model.width, model.height, lg.Center, lg.Center, content))
+	view := tea.NewView(
+		lg.Place(
+			model.width,
+			model.height,
+			lg.Center,
+			lg.Center,
+			content,
+		),
+	)
 	view.AltScreen = true
 
 	return view
+}
+
+func (model Model) viewContent() string {
+	if model.width < minWidth || model.height < minHeight {
+		return fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
+	}
+
+	// Render centered base panel
+	return model.currentWindow.View(model.width, model.height)
 }

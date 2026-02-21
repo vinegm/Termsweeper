@@ -6,7 +6,6 @@ import (
 	"time"
 
 	tea "charm.land/bubbletea/v2"
-	lg "charm.land/lipgloss/v2"
 
 	"termsweeper/internal/minesweeper"
 	"termsweeper/internal/tui/theme"
@@ -160,12 +159,6 @@ func (window *Window) gutter(showArrow bool, arrow string) string {
 	}
 
 	return window.theme.ArrowStyle.Render(arrow)
-}
-
-func (window *Window) MinSize() (int, int) {
-	contentWidth := max(2, lg.Width(boardTitle), lg.Width(window.hint()))
-
-	return contentWidth + boardChromeWidth, 1 + boardChromeHeight
 }
 
 // viewport returns the number of rows and columns visible.
