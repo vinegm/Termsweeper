@@ -1,4 +1,4 @@
-package tui
+package board
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 	lg "charm.land/lipgloss/v2"
 
 	"termsweeper/internal/minesweeper"
+	"termsweeper/internal/tui/theme"
 )
 
 // Space the board window needs on top of the board itself.
@@ -22,14 +23,14 @@ const boardTitle = "Termsweeper"
 // Board window messages.
 type (
 	// Asks for control to exit the board window.
-	exitBoardMsg struct{}
+	ExitMsg struct{}
 
 	// Message carrying a clock tick, tagged with the game generation that armed it.
 	clockTickMsg struct{ tag int }
 )
 
 // Implements the game/board screen and holds its view state.
-type BoardWindow struct {
+type Window struct {
 	CursorRow int
 	CursorCol int
 
@@ -37,8 +38,7 @@ type BoardWindow struct {
 	offsetRow int
 	offsetCol int
 
-	theme    *Theme
-	screen   *Screen
+	theme    *theme.Theme
 	game     *minesweeper.Game
 	settings minesweeper.Settings
 
@@ -46,15 +46,15 @@ type BoardWindow struct {
 	ticking  bool
 }
 
-// NewBoardWindow initializes a new BoardWindow.
+// New initializes a new Window.
 //
 //	NOTE: The game is not started until newGame() is called.
-func NewBoardWindow(theme *Theme, screen *Screen) *BoardWindow {
-	return &BoardWindow{theme: theme, screen: screen}
+func New(th *theme.Theme) *Window {
+	return &Window{theme: th}
 }
 
 // NewGame Starts a fresh game from the given settings.
-func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
+func (window *Window) NewGame(settings minesweeper.Settings) {
 	window.CursorRow = 0
 	window.CursorCol = 0
 	window.offsetRow = 0
@@ -66,46 +66,46 @@ func (window *BoardWindow) NewGame(settings minesweeper.Settings) {
 	window.ticking = false
 }
 
-func (window *BoardWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
+func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
 		cmd := window.handleKey(strings.ToLower(msg.String()))
 
 		if cmd != nil {
-			return window, cmd
+			return cmd
 		}
 
-		return window, window.startClock()
+		return window.startClock()
 
 	case clockTickMsg:
 		if msg.tag != window.clockTag {
-			return window, nil
+			return nil
 		}
 
 		if !window.game.StateIs(minesweeper.Playing) {
 			window.ticking = false
-			return window, nil
+			return nil
 		}
 
-		return window, clockTick(window.clockTag)
+		return clockTick(window.clockTag)
 	}
 
-	return window, nil
+	return nil
 }
 
-func (window *BoardWindow) View() string {
-	window.scrollToCursor()
+func (window *Window) View(width, height int) string {
+	window.scrollToCursor(width, height)
 
-	visibleRows, visibleCols := window.viewport()
+	visibleRows, visibleCols := window.viewport(width, height)
 	clipped := window.clippedEdges(visibleRows, visibleCols)
 
 	var sb strings.Builder
 
-	sb.WriteString(window.theme.titleStyle.Render(boardTitle))
+	sb.WriteString(window.theme.TitleStyle.Render(boardTitle))
 	sb.WriteString("\n")
-	sb.WriteString(window.theme.textStyle.Render(window.hint()))
+	sb.WriteString(window.theme.TextStyle.Render(window.hint()))
 	sb.WriteString("\n")
-	sb.WriteString(window.gutter(clipped.top, arrowUp))
+	sb.WriteString(window.gutter(clipped.top, theme.ArrowUp))
 	sb.WriteString("\n")
 
 	// The side arrows sit halfway down the grid, next to the outermost columns.
@@ -114,27 +114,27 @@ func (window *BoardWindow) View() string {
 	for row := window.offsetRow; row < window.offsetRow+visibleRows; row++ {
 		onArrowRow := row == arrowRow
 
-		sb.WriteString(window.gutter(clipped.left && onArrowRow, arrowLeft))
+		sb.WriteString(window.gutter(clipped.left && onArrowRow, theme.ArrowLeft))
 
 		for col := window.offsetCol; col < window.offsetCol+visibleCols; col++ {
 			cell := window.game.Cell(row, col)
-			char := window.theme.cellChar(cell)
+			char := window.theme.CellChar(cell)
 
 			isCursorRow := window.CursorRow == row
 			isCursorCol := window.CursorCol == col
 			isSelectedCell := isCursorRow && isCursorCol
-			style := window.theme.cellStyle(cell, isSelectedCell)
+			style := window.theme.CellStyle(cell, isSelectedCell)
 
 			sb.WriteString(style.Render(char + " "))
 		}
 
-		sb.WriteString(window.gutter(clipped.right && onArrowRow, arrowRight))
+		sb.WriteString(window.gutter(clipped.right && onArrowRow, theme.ArrowRight))
 		sb.WriteString("\n")
 	}
 
-	sb.WriteString(window.gutter(clipped.bottom, arrowDown))
+	sb.WriteString(window.gutter(clipped.bottom, theme.ArrowDown))
 
-	return window.theme.windowStyle.Render(sb.String())
+	return window.theme.WindowStyle.Render(sb.String())
 }
 
 // Window edges the board runs past, i.e. the ones with more board behind them.
@@ -142,7 +142,7 @@ type clippedEdges struct {
 	top, right, bottom, left bool
 }
 
-func (window *BoardWindow) clippedEdges(visibleRows, visibleCols int) clippedEdges {
+func (window *Window) clippedEdges(visibleRows, visibleCols int) clippedEdges {
 	return clippedEdges{
 		top:    window.offsetRow > 0,
 		bottom: window.offsetRow+visibleRows < window.game.Rows(),
@@ -154,35 +154,35 @@ func (window *BoardWindow) clippedEdges(visibleRows, visibleCols int) clippedEdg
 // gutter renders one cell of gutter: the arrow when the board continues past that
 // edge, a blank otherwise. Always one cell wide, so the grid never shifts as the
 // arrows come and go.
-func (window *BoardWindow) gutter(showArrow bool, arrow string) string {
+func (window *Window) gutter(showArrow bool, arrow string) string {
 	if !showArrow {
 		arrow = " "
 	}
 
-	return window.theme.arrowStyle.Render(arrow)
+	return window.theme.ArrowStyle.Render(arrow)
 }
 
-func (window *BoardWindow) MinSize() (int, int) {
+func (window *Window) MinSize() (int, int) {
 	contentWidth := max(2, lg.Width(boardTitle), lg.Width(window.hint()))
 
 	return contentWidth + boardChromeWidth, 1 + boardChromeHeight
 }
 
 // viewport returns the number of rows and columns visible.
-func (window *BoardWindow) viewport() (rows, cols int) {
-	rows = clamp(window.screen.Height-boardChromeHeight, 1, window.game.Rows())
-	cols = clamp((window.screen.Width-boardChromeWidth)/2, 1, window.game.Cols())
+func (window *Window) viewport(width, height int) (rows, cols int) {
+	rows = clamp(height-boardChromeHeight, 1, window.game.Rows())
+	cols = clamp((width-boardChromeWidth)/2, 1, window.game.Cols())
 
 	return rows, cols
 }
 
 // scrollToCursor moves the viewport to keep the cursor visible.
-func (window *BoardWindow) scrollToCursor() {
+func (window *Window) scrollToCursor(width, height int) {
 	if window.game == nil {
 		return
 	}
 
-	visibleRows, visibleCols := window.viewport()
+	visibleRows, visibleCols := window.viewport(width, height)
 
 	window.offsetRow = scrollOffset(window.offsetRow, window.CursorRow, visibleRows, window.game.Rows())
 	window.offsetCol = scrollOffset(window.offsetCol, window.CursorCol, visibleCols, window.game.Cols())
@@ -205,7 +205,7 @@ func clamp(value, low, high int) int {
 	return min(max(value, low), high)
 }
 
-func (window *BoardWindow) hint() string {
+func (window *Window) hint() string {
 	switch {
 	case window.game.StateIs(minesweeper.Won):
 		return fmt.Sprintf("You won! Time: %s", window.game.FormattedTime())
@@ -218,7 +218,7 @@ func (window *BoardWindow) hint() string {
 	}
 }
 
-func (window *BoardWindow) handleKey(key string) tea.Cmd {
+func (window *Window) handleKey(key string) tea.Cmd {
 	game := window.game
 
 	switch key {
@@ -260,13 +260,15 @@ func (window *BoardWindow) handleKey(key string) tea.Cmd {
 		window.NewGame(window.settings)
 
 	case "q":
-		return func() tea.Msg { return exitBoardMsg{} }
+		return func() tea.Msg {
+			return ExitMsg{}
+		}
 	}
 
 	return nil
 }
 
-func (window *BoardWindow) startClock() tea.Cmd {
+func (window *Window) startClock() tea.Cmd {
 	if window.ticking || !window.game.StateIs(minesweeper.Playing) {
 		return nil
 	}

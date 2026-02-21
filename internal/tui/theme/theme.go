@@ -1,4 +1,4 @@
-package tui
+package theme
 
 import (
 	"fmt"
@@ -11,20 +11,20 @@ import (
 
 // Glyphs marking a window edge the board continues past.
 const (
-	arrowUp    = "▲"
-	arrowDown  = "▼"
-	arrowLeft  = "◀"
-	arrowRight = "▶"
+	ArrowUp    = "▲"
+	ArrowDown  = "▼"
+	ArrowLeft  = "◀"
+	ArrowRight = "▶"
 )
 
 // Holds every style the windows render with, resolved from the configuration.
 type Theme struct {
 	config config.Config
 
-	textStyle             lg.Style
-	titleStyle            lg.Style
+	TextStyle             lg.Style
+	TitleStyle            lg.Style
 	selectedSquareStyle   lg.Style
-	selectedMenuTextStyle lg.Style
+	SelectedMenuTextStyle lg.Style
 
 	evenSquareStyle     lg.Style
 	oddSquareStyle      lg.Style
@@ -34,8 +34,8 @@ type Theme struct {
 
 	squareMineHintColor []lg.Style
 
-	arrowStyle  lg.Style
-	windowStyle lg.Style
+	ArrowStyle  lg.Style
+	WindowStyle lg.Style
 }
 
 func NewTheme(cfg config.Config) *Theme {
@@ -63,9 +63,9 @@ func (theme *Theme) setStyles() {
 	genericStyle := lg.NewStyle().Foreground(lg.Color(theme.config.FgColor)).Align(lg.Center)
 	genericMenuTextStyle := lg.NewStyle().Inherit(genericStyle).Bold(true)
 
-	theme.textStyle = lg.NewStyle().Inherit(genericStyle)
-	theme.titleStyle = lg.NewStyle().Inherit(genericMenuTextStyle)
-	theme.selectedMenuTextStyle = lg.NewStyle().Inherit(genericMenuTextStyle).Foreground(lg.Color(theme.config.SelectedColor))
+	theme.TextStyle = lg.NewStyle().Inherit(genericStyle)
+	theme.TitleStyle = lg.NewStyle().Inherit(genericMenuTextStyle)
+	theme.SelectedMenuTextStyle = lg.NewStyle().Inherit(genericMenuTextStyle).Foreground(lg.Color(theme.config.SelectedColor))
 	theme.selectedSquareStyle = lg.NewStyle().Inherit(genericMenuTextStyle).Background(lg.Color(theme.config.SelectedColor))
 
 	theme.evenSquareStyle = styleFromConfig(genericStyle, theme.config.EvenSquareStyle)
@@ -79,11 +79,11 @@ func (theme *Theme) setStyles() {
 		theme.squareMineHintColor[i] = styleFromConfig(genericStyle, hintConfig)
 	}
 
-	theme.arrowStyle = lg.NewStyle().
+	theme.ArrowStyle = lg.NewStyle().
 		Foreground(lg.Color(theme.config.BorderColor)).
 		Background(lg.Color(theme.config.BgColor))
 
-	theme.windowStyle = lg.NewStyle().
+	theme.WindowStyle = lg.NewStyle().
 		Background(lg.Color(theme.config.BgColor)).
 		Padding(0, 1).
 		Border(lg.RoundedBorder()).
@@ -127,7 +127,7 @@ func (theme *Theme) preserveGridBg(style lg.Style, cell minesweeper.Cell, kind s
 }
 
 // Returns the style for a cell based on its position and selection state.
-func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
+func (theme *Theme) CellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 	if isSelected {
 		return theme.selectedSquareStyle
 	}
@@ -145,7 +145,7 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 
 	if cell.StateIs(minesweeper.Revealed) {
 		if cell.Adj >= len(theme.config.SquareMineHintStyle) {
-			return theme.textStyle
+			return theme.TextStyle
 		}
 
 		return theme.preserveGridBg(theme.squareMineHintColor[cell.Adj], cell, revealedSquare)
@@ -159,7 +159,7 @@ func (theme *Theme) cellStyle(cell minesweeper.Cell, isSelected bool) lg.Style {
 }
 
 // Returns the char for a given cell based on its state.
-func (theme *Theme) cellChar(cell minesweeper.Cell) string {
+func (theme *Theme) CellChar(cell minesweeper.Cell) string {
 	if cell.StateIs(minesweeper.Revealed) {
 		if cell.StateIs(minesweeper.Mined) {
 			return theme.config.MineChar

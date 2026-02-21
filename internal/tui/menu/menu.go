@@ -1,4 +1,4 @@
-package tui
+package menu
 
 import (
 	"fmt"
@@ -7,6 +7,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"termsweeper/internal/minesweeper"
+	"termsweeper/internal/tui/theme"
 )
 
 type menuOption int
@@ -20,61 +21,61 @@ const (
 )
 
 // Asks for control to start the game with these settings.
-type startGameMsg struct{ settings minesweeper.Settings }
+type StartGameMsg struct{ Settings minesweeper.Settings }
 
-// MenuWindow is the main menu window for the game, allowing
+// Window is the main menu window for the game, allowing
 // the user to start a new game or change settings.
-type MenuWindow struct {
+type Window struct {
 	Choice   menuOption
 	Settings minesweeper.Settings
 
-	theme     *Theme
+	theme     *theme.Theme
 	minWidth  int
 	minHeight int
 }
 
-// NewMenuWindow creates a new MenuWindow with the provided theme and settings.
-func NewMenuWindow(theme *Theme, settings minesweeper.Settings) *MenuWindow {
-	return &MenuWindow{
+// New creates a new Window with the provided theme and settings.
+func New(th *theme.Theme, settings minesweeper.Settings) *Window {
+	return &Window{
 		Choice:    startGame,
 		Settings:  settings,
-		theme:     theme,
+		theme:     th,
 		minWidth:  30,
 		minHeight: 10,
 	}
 }
 
-func (window *MenuWindow) Update(msg tea.Msg) (Window, tea.Cmd) {
+func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
-		return window, window.handleKey(strings.ToLower(msg.String()))
+		return window.handleKey(strings.ToLower(msg.String()))
 	}
 
-	return window, nil
+	return nil
 }
 
 // View renders the menu window as a string.
-func (window *MenuWindow) View() string {
+func (window *Window) View(_, _ int) string {
 	var sb strings.Builder
 
-	sb.WriteString(window.theme.titleStyle.Render(getMenuTitle()))
+	sb.WriteString(window.theme.TitleStyle.Render(getMenuTitle()))
 	sb.WriteString("\n")
 
 	for i, it := range window.items() {
 		sb.WriteString("\n")
 		if window.Choice == menuOption(i) {
-			sb.WriteString(window.theme.selectedMenuTextStyle.Render(it))
+			sb.WriteString(window.theme.SelectedMenuTextStyle.Render(it))
 			continue
 		}
 
-		sb.WriteString(window.theme.textStyle.Render(it))
+		sb.WriteString(window.theme.TextStyle.Render(it))
 	}
 
-	return window.theme.windowStyle.Render(sb.String())
+	return window.theme.WindowStyle.Render(sb.String())
 }
 
 // MinSize returns the minimum width and height of the menu window.
-func (window *MenuWindow) MinSize() (int, int) {
+func (window *Window) MinSize() (int, int) {
 	return window.minWidth, window.minHeight
 }
 
@@ -89,7 +90,7 @@ func getMenuTitle() string {
 	return art[1:] // Remove leading newline
 }
 
-func (window *MenuWindow) items() []string {
+func (window *Window) items() []string {
 	return []string{
 		"Start Game",
 		"Board Rows: " + fmt.Sprintf("%d", window.Settings.Rows),
@@ -99,7 +100,7 @@ func (window *MenuWindow) items() []string {
 	}
 }
 
-func (window *MenuWindow) handleKey(key string) tea.Cmd {
+func (window *Window) handleKey(key string) tea.Cmd {
 	settings := &window.Settings
 
 	switch key {
@@ -160,7 +161,7 @@ func (window *MenuWindow) handleKey(key string) tea.Cmd {
 		case startGame:
 			chosen := window.Settings
 			return func() tea.Msg {
-				return startGameMsg{settings: chosen}
+				return StartGameMsg{Settings: chosen}
 			}
 
 		case quit:

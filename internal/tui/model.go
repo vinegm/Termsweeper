@@ -5,36 +5,36 @@ import (
 
 	"termsweeper/internal/config"
 	"termsweeper/internal/minesweeper"
+	"termsweeper/internal/tui/board"
+	"termsweeper/internal/tui/menu"
+	"termsweeper/internal/tui/theme"
 )
 
 // Model represents the state of the application.
 type Model struct {
-	theme  *Theme
-	screen *Screen
+	width  int
+	height int
 
 	currentWindow Window
-	menu          *MenuWindow
-	board         *BoardWindow
+	menu          *menu.Window
+	board         *board.Window
 }
 
 // New creates a new model with initial state.
 func New(cfg config.Config) Model {
-	theme := NewTheme(cfg)
-	screen := &Screen{}
+	th := theme.NewTheme(cfg)
 	gameSettings := minesweeper.Settings{
 		Rows:  cfg.BoardRows,
 		Cols:  cfg.BoardCols,
 		Mines: cfg.MineCount,
 	}
 
-	menu := NewMenuWindow(theme, gameSettings)
+	menuWindow := menu.New(th, gameSettings)
 
 	return Model{
-		theme:         theme,
-		screen:        screen,
-		currentWindow: menu,
-		menu:          menu,
-		board:         NewBoardWindow(theme, screen),
+		currentWindow: menuWindow,
+		menu:          menuWindow,
+		board:         board.New(th),
 	}
 }
 
