@@ -1,0 +1,57 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  uniq-by-line: false
+
+linters:
+  default: standard
+
+  enable:
+    - copyloopvar
+    - errorlint
+    - intrange
+    - nilerr
+    - revive
+    - unconvert
+    - unparam
+    - wastedassign
+
+  settings:
+    staticcheck:
+      checks:
+      - all
+
+      - -QF1008
+
+    exhaustive:
+      default-signifies-exhaustive: true
+
+    revive:
+      rules:
+        - name: exported
+          arguments: [checkPrivateReceivers]
+        - name: error-strings
+        - name: error-naming
+        - name: indent-error-flow
+        - name: context-as-argument
+        - name: unexported-return
+
+  exclusions:
+    presets:
+      - comments
+      - std-error-handling
+      - common-false-positives
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+
+  settings:
+    gofumpt:
+      module-path: termsweeper
