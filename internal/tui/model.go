@@ -1,14 +1,26 @@
 package tui
 
 import (
+	"fmt"
+
 	tea "charm.land/bubbletea/v2"
+	lg "charm.land/lipgloss/v2"
+
+	"termsweeper/internal/tui/board"
+	"termsweeper/internal/tui/menu"
 
 	"termsweeper/internal/config"
 	"termsweeper/internal/minesweeper"
-	"termsweeper/internal/tui/board"
-	"termsweeper/internal/tui/menu"
 	"termsweeper/internal/tui/theme"
 )
+
+// Window is the interface that holds methods to handle
+// updates and rendering for different windows.
+type Window interface {
+	Update(msg tea.Msg) tea.Cmd
+	View(width, height int) string
+	MinSize() (int, int)
+}
 
 // Model represents the state of the application.
 type Model struct {
@@ -43,4 +55,43 @@ func New(cfg config.Config) Model {
 //	WARN: This function is required by the Bubble Tea framework.
 func (model Model) Init() tea.Cmd {
 	return nil
+}
+
+// Tea update loop
+func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		model.width = msg.Width
+		model.height = msg.Height
+		return model, nil
+
+	case menu.StartGameMsg:
+		model.board.NewGame(msg.Settings)
+		model.currentWindow = model.board
+		return model, nil
+
+	case board.ExitMsg:
+		model.currentWindow = model.menu
+		return model, nil
+	}
+
+	return model, model.currentWindow.Update(msg)
+}
+
+// Tea view rendering, handles terminal size checks and delegates to the current window.
+func (model Model) View() tea.View {
+	minWidth, minHeight := model.currentWindow.MinSize()
+
+	var content string
+	if model.width < minWidth || model.height < minHeight {
+		content = fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
+	} else {
+		// Render centered base panel
+		content = model.currentWindow.View(model.width, model.height)
+	}
+
+	view := tea.NewView(lg.Place(model.width, model.height, lg.Center, lg.Center, content))
+	view.AltScreen = true
+
+	return view
 }
