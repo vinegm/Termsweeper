@@ -10,9 +10,6 @@ text_color: "#ebdbb2"
 selected_color: "#fabd2f"
 border_color: "#928374"
 
-highlight_row: ""
-highlight_col: ""
-
 highlight_even_color: "#504945"
 highlight_odd_color: "#5a524c"
 

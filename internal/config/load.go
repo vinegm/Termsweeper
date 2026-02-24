@@ -1,0 +1,53 @@
+package config
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v3"
+)
+
+// validate reports an error for any setting
+// the rest of the program can't work with.
+func (config Config) validate() error {
+	if config.Scrolloff < 0 {
+		return fmt.Errorf("scrolloff: must not be negative, got %d", config.Scrolloff)
+	}
+
+	if config.SideScrolloff < 0 {
+		return fmt.Errorf("sidescrolloff: must not be negative, got %d", config.SideScrolloff)
+	}
+
+	return nil
+}
+
+// Loads configuration from file. The returned config is always usable:
+// on error the defaults are returned alongside it.
+func Load(path string) (Config, error) {
+	config := Default()
+
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return config, err
+	}
+
+	if err := yaml.Unmarshal(data, &config); err != nil {
+		return Default(), err
+	}
+
+	if err := config.validate(); err != nil {
+		return Default(), err
+	}
+
+	return config, nil
+}
+
+func DefaultPath() string {
+	if home, err := os.UserHomeDir(); err == nil {
+		return filepath.Join(home, ".config", "termsweeper", "config.yaml")
+	}
+
+	// crappy fallback, might not even work
+	return "$HOME/.config/termsweeper/config.yaml"
+}

@@ -24,16 +24,15 @@ selected_color: "#5a5a5a" # Used as fg color for selected text and bg color for 
 border_color: "" # Missing a field is also fine, will use defaults/terminal colors
 bg_color: "" # Used as the default bg color for the window and squares if not set in their specific style
 
-# Cursor row/column highlight, split at the cursor
-highlight_row: "" # "left", "right", "both", or "" to disable. Lights up cells left/right of the cursor
-highlight_col: "" # "top", "bottom", "both", or "" to disable. Lights up cells above/below the cursor
+# highlight and number allow for directional control of their feature:
+# Any of "left", "right", "top", "bottom", or a list of them, e.g. [left, top].
+# "horizontal" = [left, right], "vertical" = [top, bottom], "all" = every side,
+# "" or "none" to disable.
+highlight: "" # lights up the cells in those directions from the cursor
+numbers: "" # shows the coordenate of the square in the gutter
 
 highlight_even_color: "#3a3a3a" # bg color for highlighted even squares
 highlight_odd_color: "#454545" # bg color for highlighted odd squares
-
-# Row/column number labels
-line_numbers: "" # "left", "right", "both", or "" to hide row numbers
-column_numbers: "" # "top", "bottom", "both", or "" to hide column numbers
 
 relative_line_numbers: false # if true, row numbers show distance from the cursor's row, like nvim's relativenumber
 relative_column_numbers: false # if true, column numbers show distance from the cursor's column

@@ -180,7 +180,6 @@ func (game *Game) Reveal(row, col int) {
 
 // Reveals a single cell and reveals neighbors if it has no adjacent mines.
 // Expects the cell to be in bounds and not revealed nor flagged.
-// Iterative so that a large empty board cannot blow the stack.
 func (game *Game) revealSingleCell(row int, col int) {
 	pending := [][2]int{{row, col}}
 
