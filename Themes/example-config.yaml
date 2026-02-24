@@ -7,6 +7,12 @@ board_rows: 16
 board_cols: 16
 mine_count: 40
 
+# Minimum rows/columns kept visible between the cursor and the viewport edge
+# when scrolling, like nvim's 'scrolloff'/'sidescrolloff'. Only matters on
+# boards bigger than the terminal.
+scrolloff: 0
+sidescrolloff: 0
+
 # Chars
 flag_char: "F"
 mine_char: "X"
@@ -17,6 +23,23 @@ fg_color: "" # Used as the default fg color for all text, and fg color for squar
 selected_color: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
 border_color: "" # Missing a field is also fine, will use defaults/terminal colors
 bg_color: "" # Used as the default bg color for the window and squares if not set in their specific style
+
+# Cursor row/column highlight, split at the cursor
+highlight_row: "" # "left", "right", "both", or "" to disable. Lights up cells left/right of the cursor
+highlight_col: "" # "top", "bottom", "both", or "" to disable. Lights up cells above/below the cursor
+
+highlight_even_color: "#3a3a3a" # bg color for highlighted even squares
+highlight_odd_color: "#454545" # bg color for highlighted odd squares
+
+# Row/column number labels
+line_numbers: "" # "left", "right", "both", or "" to hide row numbers
+column_numbers: "" # "top", "bottom", "both", or "" to hide column numbers
+
+relative_line_numbers: false # if true, row numbers show distance from the cursor's row, like nvim's relativenumber
+relative_column_numbers: false # if true, column numbers show distance from the cursor's column
+
+label_number_color: "" # fg color for row/column numbers not on the cursor's row/column
+highlight_label_number_color: "" # fg color for the row/column number on the cursor's row/column
 
 # Square styles
 even_square_style:

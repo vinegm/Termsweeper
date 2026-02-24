@@ -74,6 +74,11 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case menu.StartGameMsg:
 		model.board.NewGame(msg.Settings)
+		model.menu.OngoingGame = true
+		model.currentWindow = model.board
+		return model, nil
+
+	case menu.ContinueGameMsg:
 		model.currentWindow = model.board
 		return model, nil
 

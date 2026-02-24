@@ -20,6 +20,7 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 - Timer, win/loss detection, and keyboard controls
 - Configurable board size, mine count, and display characters
 - Boards larger than the terminal scroll with the cursor, with a dashed border on the edges the board continues past
+- Optional row/column number labels (absolute or relative) and cursor row/column highlighting
 - Multiple color themes (see the Themes directory)
 
 ## Getting Started
@@ -56,9 +57,11 @@ Configurable items include board rows/columns, mine count, characters for mines/
 
 Use arrow keys or Vim-keys keys to move the cursor. Primary controls:
 
+Movement keys accept a count prefix, like Vim: `5j` moves down five cells, `12l` moves right twelve.
+
 - `R`: Reset the current board
 - `F`: Toggle a flag on the highlighted cell
-- `Q`: Quit the game (or return to the menu when in-game)
+- `Q`: Quit the game (or return to the menu when in-game, where `Continue` resumes it)
 - `Space` / `Enter`: Reveal the highlighted cell (or auto-reveal neighbors when applicable)
 
 ## Themes & Assets

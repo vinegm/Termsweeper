@@ -10,6 +10,15 @@ text_color: "#e6def3"
 selected_color: "#31748f"
 border_color: "#eb6f92"
 
+highlight_row: ""
+highlight_col: ""
+
+highlight_even_color: "#393552"
+highlight_odd_color: "#2a273f"
+
+label_number_color: "#6e6a86"
+highlight_label_number_color: "#31748f"
+
 # Square styles
 even_square_style:
   bg_color: "#232136"

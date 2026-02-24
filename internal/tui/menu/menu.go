@@ -13,21 +13,34 @@ import (
 type menuOption int
 
 const (
-	startGame menuOption = iota
+	continueGame menuOption = iota
+	startNewGame
 	boardRows
 	boardCols
 	mineCount
 	quit
 )
 
-// Asks for control to start the game with these settings.
-type StartGameMsg struct{ Settings minesweeper.Settings }
+// A single selectable row of the menu.
+type menuItem struct {
+	label  string
+	action menuOption
+}
+
+type (
+	// Asks for control to start a new game with these settings.
+	StartGameMsg struct{ Settings minesweeper.Settings }
+
+	// Asks for control to return to the game already in progress.
+	ContinueGameMsg struct{}
+)
 
 // Window is the main menu window for the game, allowing
 // the user to start a new game or change settings.
 type Window struct {
-	Choice   menuOption
-	Settings minesweeper.Settings
+	Choice      int
+	OngoingGame bool
+	Settings    minesweeper.Settings
 
 	theme *theme.Theme
 }
@@ -35,7 +48,6 @@ type Window struct {
 // New creates a new Window with the provided theme and settings.
 func New(th *theme.Theme, settings minesweeper.Settings) *Window {
 	return &Window{
-		Choice:   startGame,
 		Settings: settings,
 		theme:    th,
 	}
@@ -57,14 +69,14 @@ func (window *Window) View(_, _ int) string {
 	sb.WriteString(window.theme.TitleStyle.Render(getMenuTitle()))
 	sb.WriteString("\n")
 
-	for i, it := range window.items() {
+	for i, item := range window.items() {
 		sb.WriteString("\n")
-		if window.Choice == menuOption(i) {
-			sb.WriteString(window.theme.SelectedMenuTextStyle.Render(it))
+		if window.Choice == i {
+			sb.WriteString(window.theme.SelectedMenuTextStyle.Render(item.label))
 			continue
 		}
 
-		sb.WriteString(window.theme.TextStyle.Render(it))
+		sb.WriteString(window.theme.TextStyle.Render(item.label))
 	}
 
 	return window.theme.WindowStyle.Render(sb.String())
@@ -81,18 +93,29 @@ func getMenuTitle() string {
 	return art[1:] // Remove leading newline
 }
 
-func (window *Window) items() []string {
-	return []string{
-		"Start Game",
-		"Board Rows: " + fmt.Sprintf("%d", window.Settings.Rows),
-		"Board Cols: " + fmt.Sprintf("%d", window.Settings.Cols),
-		"Mines: " + fmt.Sprintf("%d", window.Settings.Mines),
-		"Quit",
+func (window *Window) items() []menuItem {
+	items := []menuItem{}
+
+	if window.OngoingGame {
+		items = append(items,
+			menuItem{"Continue", continueGame},
+			menuItem{"New Game", startNewGame},
+		)
+	} else {
+		items = append(items, menuItem{"Start Game", startNewGame})
 	}
+
+	return append(items,
+		menuItem{fmt.Sprintf("Board Rows: %d", window.Settings.Rows), boardRows},
+		menuItem{fmt.Sprintf("Board Cols: %d", window.Settings.Cols), boardCols},
+		menuItem{fmt.Sprintf("Mines: %d", window.Settings.Mines), mineCount},
+		menuItem{"Quit", quit},
+	)
 }
 
 func (window *Window) handleKey(key string) tea.Cmd {
 	settings := &window.Settings
+	items := window.items()
 
 	switch key {
 	case "up", "k":
@@ -101,12 +124,12 @@ func (window *Window) handleKey(key string) tea.Cmd {
 		}
 
 	case "down", "j":
-		if window.Choice < menuOption(len(window.items())-1) {
+		if window.Choice < len(items)-1 {
 			window.Choice++
 		}
 
 	case "left":
-		switch window.Choice {
+		switch items[window.Choice].action {
 		case boardRows:
 			if settings.Rows > 5 {
 				settings.Rows--
@@ -133,7 +156,7 @@ func (window *Window) handleKey(key string) tea.Cmd {
 		}
 
 	case "right":
-		switch window.Choice {
+		switch items[window.Choice].action {
 		case boardRows:
 			settings.Rows++
 
@@ -148,8 +171,13 @@ func (window *Window) handleKey(key string) tea.Cmd {
 		}
 
 	case "enter", "space":
-		switch window.Choice {
-		case startGame:
+		switch items[window.Choice].action {
+		case continueGame:
+			return func() tea.Msg {
+				return ContinueGameMsg{}
+			}
+
+		case startNewGame:
 			chosen := window.Settings
 			return func() tea.Msg {
 				return StartGameMsg{Settings: chosen}
