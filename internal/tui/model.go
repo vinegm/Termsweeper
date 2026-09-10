@@ -40,15 +40,9 @@ type Model struct {
 }
 
 // New creates a new model with initial state.
-func New(cfg config.Config) Model {
+func New(cfg config.Config, settings minesweeper.Settings) Model {
 	th := theme.NewTheme(cfg)
-	gameSettings := minesweeper.Settings{
-		Rows:  cfg.BoardRows,
-		Cols:  cfg.BoardCols,
-		Mines: cfg.MineCount,
-	}
-
-	menuWindow := menu.New(th, gameSettings)
+	menuWindow := menu.New(th, settings)
 
 	return Model{
 		currentWindow: menuWindow,

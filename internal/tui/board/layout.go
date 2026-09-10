@@ -66,7 +66,7 @@ func scrollOffset(offset, cursor, visible, total, off int) int {
 		offset = cursor + off - visible + 1
 	}
 
-	return clamp(offset, 0, total-visible)
+	return clamp(offset, 0, max(total-visible, 0))
 }
 
 // clamp returns value clamped to the range [low, high].
