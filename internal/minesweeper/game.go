@@ -35,13 +35,6 @@ const (
 	PlayerTurn = Playing | FirstMove
 )
 
-// Settings for the game board.
-type Settings struct {
-	Rows  int
-	Cols  int
-	Mines int
-}
-
 // Game state.
 type Game struct {
 	Timer
@@ -62,6 +55,10 @@ func (game *Game) StateIs(state GameState) bool {
 
 // New initializes a new game with the given settings.
 func New(settings Settings) *Game {
+	settings.Rows = max(settings.Rows, 0)
+	settings.Cols = max(settings.Cols, 0)
+	settings.Mines = min(max(settings.Mines, 0), max(settings.MaxMines(), 0))
+
 	board := make([][]Cell, settings.Rows)
 	for i := range board {
 		board[i] = make([]Cell, settings.Cols)

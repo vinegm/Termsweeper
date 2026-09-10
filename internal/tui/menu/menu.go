@@ -114,7 +114,6 @@ func (window *Window) items() []menuItem {
 }
 
 func (window *Window) handleKey(key string) tea.Cmd {
-	settings := &window.Settings
 	items := window.items()
 
 	switch key {
@@ -129,46 +128,10 @@ func (window *Window) handleKey(key string) tea.Cmd {
 		}
 
 	case "left":
-		switch items[window.Choice].action {
-		case boardRows:
-			if settings.Rows > 5 {
-				settings.Rows--
-				max := settings.Rows * settings.Cols
-
-				if settings.Mines >= max {
-					settings.Mines = max - 1
-				}
-			}
-
-		case boardCols:
-			if settings.Cols > 5 {
-				settings.Cols--
-				max := settings.Rows * settings.Cols
-				if settings.Mines >= max {
-					settings.Mines = max - 1
-				}
-			}
-
-		case mineCount:
-			if settings.Mines > 1 {
-				settings.Mines--
-			}
-		}
+		window.adjust(items[window.Choice].action, -1)
 
 	case "right":
-		switch items[window.Choice].action {
-		case boardRows:
-			settings.Rows++
-
-		case boardCols:
-			settings.Cols++
-
-		case mineCount:
-			max := settings.Rows * settings.Cols
-			if settings.Mines < max-1 {
-				settings.Mines++
-			}
-		}
+		window.adjust(items[window.Choice].action, 1)
 
 	case "enter", "space":
 		switch items[window.Choice].action {
@@ -192,4 +155,27 @@ func (window *Window) handleKey(key string) tea.Cmd {
 	}
 
 	return nil
+}
+
+// adjust steps the setting the given menu row edits.
+func (window *Window) adjust(action menuOption, step int) {
+	settings := &window.Settings
+
+	switch action {
+	case boardRows:
+		settings.Rows = clampDim(settings.Rows + step)
+
+	case boardCols:
+		settings.Cols = clampDim(settings.Cols + step)
+
+	case mineCount:
+		settings.Mines += step
+	}
+
+	settings.Mines = min(max(settings.Mines, minesweeper.MinMines), settings.MaxMines())
+}
+
+// clampDim keeps a board dimension within its limits.
+func clampDim(dim int) int {
+	return min(max(dim, minesweeper.MinDim), minesweeper.MaxDim)
 }

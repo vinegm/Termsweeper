@@ -25,12 +25,12 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 
 ## Getting Started
 
-Prerequisites: Go 1.20 or newer
+Prerequisites: Go 1.25 or newer (see `go.mod`)
 
 Clone the repository and run locally:
 
 ```bash
-git clone https://github.com/yourusername/termsweeper.git
+git clone https://github.com/vinegm/termsweeper.git
 cd termsweeper
 go run main.go
 ```
@@ -42,16 +42,19 @@ go build -o termsweeper ./
 ./termsweeper
 ```
 
-Runtime debug flags:
+Command line flags:
 
+- `--version` : print the version and exit
 - `--debug` : enable debug logging
-- `--debug-file <path>` : write debug logs to the specified file
+- `--debug-file <path>` : write debug logs to the specified file (defaults to `/tmp/termsweeper.log`)
 
 ## Configuration
 
-Configuration is loaded at startup (see `internal/config/config.go`). An example config is provided at `Themes/example-config.yaml`.
+Configuration is read at startup from `~/.config/termsweeper/config.yaml`. The file is optional: anything it leaves out keeps its built-in default (see `internal/config/config.go`), an unparsable or invalid file falls back to the defaults entirely, and a board size or mine count no game can be played on falls back to the default board. An example config is provided at `Themes/example-config.yaml`.
 
 Configurable items include board rows/columns, mine count, characters for mines/flags/unrevealed cells, and many color settings for cells and UI elements.
+
+Boards must be between 5x5 and 1000x1000, with at least one mine and at least one mine-free cell (the first cell revealed is never mined).
 
 ## Controls
 
@@ -75,6 +78,17 @@ Theme files are stored in the `Themes` directory; several presets are included (
 ### Default theme:
 
 ![tokyo_night_theme_example](assets/default_theme.jpeg)
+
+## Development
+
+```bash
+make build   # build the binary
+make run     # build and run
+make test    # run the test suite
+make ci      # format check, vet, lint and test
+```
+
+Linting and formatting use [golangci-lint](https://golangci-lint.run/welcome/install/); `make demos` regenerates the demo gif with [vhs](https://github.com/charmbracelet/vhs).
 
 # Contributing
 

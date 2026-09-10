@@ -10,6 +10,7 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"termsweeper/internal/config"
+	"termsweeper/internal/minesweeper"
 	"termsweeper/internal/tui"
 )
 
@@ -46,8 +47,29 @@ func main() {
 		log.Printf("Could not load config: %v", err)
 	}
 
-	program := tea.NewProgram(tui.New(cfg))
+	program := tea.NewProgram(tui.New(cfg, gameSettings(cfg)))
 	if _, err := program.Run(); err != nil {
 		log.Fatal(err)
+	}
+}
+
+// gameSettings is the board a new game starts from.
+func gameSettings(cfg config.Config) minesweeper.Settings {
+	settings := settingsFrom(cfg)
+
+	if err := settings.Validate(); err != nil {
+		log.Printf("Invalid board settings, using the defaults: %v", err)
+
+		return settingsFrom(config.Default())
+	}
+
+	return settings
+}
+
+func settingsFrom(cfg config.Config) minesweeper.Settings {
+	return minesweeper.Settings{
+		Rows:  cfg.BoardRows,
+		Cols:  cfg.BoardCols,
+		Mines: cfg.MineCount,
 	}
 }
