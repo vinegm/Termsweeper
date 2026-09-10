@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -17,11 +18,19 @@ const (
 	logLevel = "debug"
 )
 
+var version = "dev"
+
 func main() {
 	debug := flag.Bool("debug", false, "enable debug mode")
 	debugFile := flag.String("debug-file", logFile, "path to debug log file (ignored if --debug is not set)")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 
 	flag.Parse()
+
+	if *showVersion {
+		fmt.Println("termsweeper version", version)
+		return
+	}
 
 	log.SetOutput(io.Discard)
 	if *debug {
