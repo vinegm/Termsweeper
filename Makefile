@@ -32,8 +32,12 @@ vet:
 lint: have-lint
 	golangci-lint run
 
+.PHONY: test
+test:
+	go test ./...
+
 .PHONY: ci
-ci: fmt-check vet lint
+ci: fmt-check vet lint test
 
 .PHONY: clean
 clean:
