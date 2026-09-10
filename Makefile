@@ -35,6 +35,18 @@ lint: have-lint
 .PHONY: ci
 ci: fmt-check vet lint
 
+.PHONY: have-vhs
+have-vhs:
+	@if ! command -v vhs >/dev/null 2>&1; then \
+		echo "error: vhs is not installed"; \
+		echo "install: https://github.com/charmbracelet/vhs"; \
+		exit 1; \
+	fi
+
+.PHONY: demo
+demo: have-vhs build
+	vhs vhs/demo.tape
+
 .PHONY: clean
 clean:
 	rm -f $(BINARY)
