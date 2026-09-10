@@ -77,11 +77,11 @@ Theme files are stored in the `Themes` directory; several presets are included (
 
 ### Tokyo Night Theme:
 
-![tokyo_night_theme_example](assets/tokyo_night_theme.jpeg)
+![tokyo_night_theme_example](assets/tokyo_night_theme.png)
 
 ### Default theme:
 
-![tokyo_night_theme_example](assets/default_theme.jpeg)
+![default_theme_example](assets/default_theme.png)
 
 ## Development
 
@@ -92,7 +92,7 @@ make test    # run the test suite
 make ci      # format check, vet, lint and test
 ```
 
-Linting and formatting use [golangci-lint](https://golangci-lint.run/welcome/install/); `make demos` regenerates the demo gif with [vhs](https://github.com/charmbracelet/vhs).
+Linting and formatting use [golangci-lint](https://golangci-lint.run/welcome/install/); `make demo` regenerates the demo gif and the theme screenshots with [vhs](https://github.com/charmbracelet/vhs).
 
 # Contributing
 
