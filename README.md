@@ -67,6 +67,8 @@ Movement keys accept a count prefix, like Vim: `5j` moves down five cells, `12l`
 - `Q`: Quit the game (or return to the menu when in-game, where `Continue` resumes it)
 - `Space` / `Enter`: Reveal the highlighted cell (or auto-reveal neighbors when applicable)
 
+In the menu, press `Enter` on `Seed` to edit it, type anything (`Backspace` deletes a character), and press `Enter` or `Esc` when done; the same seed, board size, mine count and first move always give the same layout, and an empty seed shows as `random`.
+
 ## Themes & Assets
 
 Theme files are stored in the `Themes` directory; several presets are included (catppuccin, dracula, gruvbox, rose-pine, tokyo-night).
