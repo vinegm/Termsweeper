@@ -3,9 +3,10 @@ package config
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"gopkg.in/yaml.v3"
+
+	"github.com/vinegm/termsweeper/internal/storage/paths"
 )
 
 // validate reports an error for any setting
@@ -43,11 +44,7 @@ func Load(path string) (Config, error) {
 	return config, nil
 }
 
+// DefaultPath is the config file's path.
 func DefaultPath() string {
-	if home, err := os.UserHomeDir(); err == nil {
-		return filepath.Join(home, ".config", "termsweeper", "config.yaml")
-	}
-
-	// crappy fallback, might not even work
-	return "$HOME/.config/termsweeper/config.yaml"
+	return paths.Config("config.yaml")
 }
