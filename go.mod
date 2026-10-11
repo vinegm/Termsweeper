@@ -1,4 +1,4 @@
-module termsweeper
+module github.com/vinegm/termsweeper
 
 go 1.25.5
 

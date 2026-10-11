@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // rowLabel renders the number shown on one side of a board row, full width so

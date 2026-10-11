@@ -9,9 +9,9 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"termsweeper/internal/config"
-	"termsweeper/internal/minesweeper"
-	"termsweeper/internal/tui"
+	"github.com/vinegm/termsweeper/internal/config"
+	"github.com/vinegm/termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/tui"
 )
 
 const (

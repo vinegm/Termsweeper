@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"termsweeper/internal/minesweeper"
-	"termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 func (window *Window) View(width, height int) string {

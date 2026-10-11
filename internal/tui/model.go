@@ -6,12 +6,12 @@ import (
 	tea "charm.land/bubbletea/v2"
 	lg "charm.land/lipgloss/v2"
 
-	"termsweeper/internal/tui/board"
-	"termsweeper/internal/tui/menu"
+	"github.com/vinegm/termsweeper/internal/tui/board"
+	"github.com/vinegm/termsweeper/internal/tui/menu"
 
-	"termsweeper/internal/config"
-	"termsweeper/internal/minesweeper"
-	"termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/config"
+	"github.com/vinegm/termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // Smallest terminal the app renders correctly in.

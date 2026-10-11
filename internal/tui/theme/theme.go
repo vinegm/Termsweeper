@@ -3,7 +3,7 @@ package theme
 import (
 	lg "charm.land/lipgloss/v2"
 
-	"termsweeper/internal/config"
+	"github.com/vinegm/termsweeper/internal/config"
 )
 
 // Theme holds every style the windows render

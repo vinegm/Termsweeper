@@ -54,4 +54,4 @@ formatters:
 
   settings:
     gofumpt:
-      module-path: termsweeper
+      module-path: github.com/vinegm/termsweeper

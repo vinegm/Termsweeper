@@ -6,8 +6,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"termsweeper/internal/minesweeper"
-	"termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // Space the board window needs on top of the board itself.

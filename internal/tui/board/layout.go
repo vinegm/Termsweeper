@@ -1,7 +1,7 @@
 package board
 
 import (
-	"termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // chromeWidth is the horizontal space taken by everything but the grid itself.

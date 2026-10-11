@@ -1,6 +1,6 @@
 package theme
 
-import "termsweeper/internal/config"
+import "github.com/vinegm/termsweeper/internal/config"
 
 // Glyphs marking a window edge the board continues past.
 const (

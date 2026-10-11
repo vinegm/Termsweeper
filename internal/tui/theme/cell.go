@@ -5,7 +5,7 @@ import (
 
 	lg "charm.land/lipgloss/v2"
 
-	"termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/minesweeper"
 )
 
 // Returns the style for a cell based on its position, selection and highlight state.
