@@ -47,6 +47,8 @@ Command line flags:
 - `--version` : print the version and exit
 - `--debug` : enable debug logging
 - `--debug-file <path>` : write debug logs to the specified file (defaults to `/tmp/termsweeper.log`)
+- `--config <path>` : load the config from `<path>` instead of the default location
+- `--no-config` : ignore the config file and run with the built-in defaults
 
 ## Configuration
 
