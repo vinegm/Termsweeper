@@ -1,44 +1,41 @@
-# Chars
-# If you have a nerd font installed:
-# flag_char: "⚑"
-# mine_char: "󰚑"
-flag_char: "F"
-mine_char: "X"
+chars:
+  # If you have a nerd font installed:
+  # flag: "⚑"
+  # mine: "󰚑"
+  flag: "F"
+  mine: "X"
 
-# Colors
-fg_color: "#c0caf5"
-selected_color: "#7AA2F7"
-border_color: "#F7768F"
+theme:
+  fg: "#c0caf5"
+  selected: "#7AA2F7"
+  border: "#F7768F"
 
-highlight_even_color: "#2f3549"
-highlight_odd_color: "#3b4261"
+  label:
+    fg: "#565f89"
+    highlight: "#7AA2F7"
 
-label_number_color: "#565f89"
-highlight_label_number_color: "#7AA2F7"
+  highlight:
+    even: "#2f3549"
+    odd: "#3b4261"
 
-# Square styles
-even_square_style:
-  bg_color: "#1F2430"
-
-odd_square_style:
-  bg_color: "#2A2E3A"
-
-flagged_square_style:
-  fg_color: "#FFD580"
-
-mined_square_style:
-  fg_color: "#F7768F"
-
-exploded_square_style:
-  fg_color: "#F77000"
-
-square_mine_hint_style:
-  - fg_color: ""
-  - fg_color: "#5FB3FF"
-  - fg_color: "#7CFF8C"
-  - fg_color: "#FFD580"
-  - fg_color: "#FF9AA2"
-  - fg_color: "#D7BDE2"
-  - fg_color: "#F5CBA7"
-  - fg_color: "#AED6F1"
-  - fg_color: "#F7DC6F"
+  squares:
+    even:
+      bg: "#1F2430"
+    odd:
+      bg: "#2A2E3A"
+    flagged:
+      fg: "#FFD580"
+    mined:
+      fg: "#F7768F"
+    exploded:
+      fg: "#F77000"
+    hints:
+      - fg: ""
+      - fg: "#5FB3FF"
+      - fg: "#7CFF8C"
+      - fg: "#FFD580"
+      - fg: "#FF9AA2"
+      - fg: "#D7BDE2"
+      - fg: "#F5CBA7"
+      - fg: "#AED6F1"
+      - fg: "#F7DC6F"

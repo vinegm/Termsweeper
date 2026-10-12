@@ -1,138 +1,117 @@
 package config
 
-// Square foreground and background color for a square.
-type SquareStyleConfig struct {
-	FgColor string `yaml:"fg_color"`
-	BgColor string `yaml:"bg_color"`
-}
-
-// PreserveGridBgConfig determines whether the checkerboard
-// background is preserved for a given square state.
-type PreserveGridBgConfig struct {
-	Revealed bool `yaml:"revealed"`
-	Flag     bool `yaml:"flag"`
-	Mine     bool `yaml:"mine"`
-}
-
+// Config is config.yaml.
+// Keys are documented in Themes/example-config.yaml.
 type Config struct {
-	// Game settings
-	BoardRows int `yaml:"board_rows"`
-	BoardCols int `yaml:"board_cols"`
-	MineCount int `yaml:"mine_count"`
+	Board     Board     `yaml:"board"`
+	Behaviour Behaviour `yaml:"behaviour"`
+	Layout    Layout    `yaml:"layout"`
+	Chars     Chars     `yaml:"chars"`
+	Theme     Theme     `yaml:"theme"`
+}
 
-	// Directions out from the cursor its row/column highlight extends in
-	Highlight                 EdgeSetting `yaml:"highlight"`
-	HighlightLabelNumberColor string      `yaml:"highlight_label_number_color"` // label on the cursor's row/column
-	HighlightEvenColor        string      `yaml:"highlight_even_color"`
-	HighlightOddColor         string      `yaml:"highlight_odd_color"`
+// Board is the size of a new game.
+type Board struct {
+	Rows  int `yaml:"rows"`
+	Cols  int `yaml:"cols"`
+	Mines int `yaml:"mines"`
+}
 
-	// Board edges the row/column coordinate labels are drawn on
-	Numbers               EdgeSetting `yaml:"numbers"`
-	LabelNumberColor      string      `yaml:"label_number_color"`      // labels not on the cursor's row/column
-	RelativeLineNumbers   bool        `yaml:"relative_line_numbers"`   // like nvim's 'relativenumber'
-	RelativeColumnNumbers bool        `yaml:"relative_column_numbers"` // like nvim's 'relativenumber' but for columns
-
-	// Style settings
-	FgColor       string `yaml:"fg_color"`
-	BgColor       string `yaml:"bg_color"`
-	SelectedColor string `yaml:"selected_color"`
-	BorderColor   string `yaml:"border_color"`
-
-	// Board styles
-	EvenSquareStyle SquareStyleConfig `yaml:"even_square_style"`
-	OddSquareStyle  SquareStyleConfig `yaml:"odd_square_style"`
-
-	FlaggedSquareStyle  SquareStyleConfig   `yaml:"flagged_square_style"`
-	MinedSquareStyle    SquareStyleConfig   `yaml:"mined_square_style"`
-	SquareMineHintStyle []SquareStyleConfig `yaml:"square_mine_hint_style"` // indexed by number of adjacent mines
-	ExplodedSquareStyle SquareStyleConfig   `yaml:"exploded_square_style"`
-
-	PreserveGridBg PreserveGridBgConfig `yaml:"preserve_grid_bg"` // if we need to preserve the checkerboard background
-
-	// Character settings
-	FlagChar       string `yaml:"flag_char"`
-	MineChar       string `yaml:"mine_char"`
-	UnrevealedChar string `yaml:"unrevealed_char"`
-
+// Behaviour is how the cursor moves, not how it looks.
+type Behaviour struct {
 	// Minimum rows/columns kept visible between the
 	// cursor and the viewport edge when scrolling
 	Scrolloff     int `yaml:"scrolloff"`     // like nvim's 'scrolloff'
 	SideScrolloff int `yaml:"sidescrolloff"` // like nvim's 'sidescrolloff'
 }
 
+// Layout is what is drawn around the cursor and the board.
+type Layout struct {
+	// Directions out from the cursor its row/column highlight extends in
+	Highlight EdgeSetting `yaml:"highlight"`
+
+	// Board edges the row/column coordinate labels are drawn on
+	Numbers               EdgeSetting `yaml:"numbers"`
+	RelativeLineNumbers   bool        `yaml:"relative_line_numbers"`   // like nvim's 'relativenumber'
+	RelativeColumnNumbers bool        `yaml:"relative_column_numbers"` // like nvim's 'relativenumber' but for columns
+}
+
+// Chars is what a square shows in each state.
+type Chars struct {
+	Flag       string `yaml:"flag"`
+	Mine       string `yaml:"mine"`
+	Unrevealed string `yaml:"unrevealed"`
+}
+
 // The built-in configuration, used as the
 // base the config file is layered over.
 func Default() Config {
 	return Config{
-		BoardRows: 16,
-		BoardCols: 16,
-		MineCount: 40,
-
-		Scrolloff:     0,
-		SideScrolloff: 0,
-
-		FlagChar:       "F",
-		MineChar:       "X",
-		UnrevealedChar: " ",
-
-		Numbers: EdgeNone,
-
-		RelativeLineNumbers:   false,
-		RelativeColumnNumbers: false,
-
-		LabelNumberColor:          "",
-		HighlightLabelNumberColor: "",
-
-		FgColor:       "",
-		SelectedColor: "#5a5a5a",
-		BgColor:       "",
-		BorderColor:   "",
-
-		Highlight:          EdgeNone,
-		HighlightEvenColor: "#3a3a3a",
-		HighlightOddColor:  "#454545",
-
-		EvenSquareStyle: SquareStyleConfig{
-			FgColor: "",
-			BgColor: "#1C2B1C",
+		Board: Board{
+			Rows:  16,
+			Cols:  16,
+			Mines: 40,
 		},
 
-		OddSquareStyle: SquareStyleConfig{
-			FgColor: "",
-			BgColor: "#263726",
+		Behaviour: Behaviour{
+			Scrolloff:     0,
+			SideScrolloff: 0,
 		},
 
-		FlaggedSquareStyle: SquareStyleConfig{
-			FgColor: "#FFD580",
-			BgColor: "",
+		Layout: Layout{
+			Highlight:             EdgeNone,
+			Numbers:               EdgeNone,
+			RelativeLineNumbers:   false,
+			RelativeColumnNumbers: false,
 		},
 
-		MinedSquareStyle: SquareStyleConfig{
-			FgColor: "#800000",
-			BgColor: "",
+		Chars: Chars{
+			Flag:       "F",
+			Mine:       "X",
+			Unrevealed: " ",
 		},
 
-		ExplodedSquareStyle: SquareStyleConfig{
-			FgColor: "",
-			BgColor: "",
-		},
+		Theme: Theme{
+			Fg:       "",
+			Bg:       "",
+			Selected: "#5a5a5a",
+			Border:   "",
 
-		SquareMineHintStyle: []SquareStyleConfig{
-			{FgColor: "", BgColor: ""}, // 0 mines
-			{FgColor: "", BgColor: ""}, // 1 mines
-			{FgColor: "", BgColor: ""}, // 2 mines
-			{FgColor: "", BgColor: ""}, // 3 mines
-			{FgColor: "", BgColor: ""}, // 4 mines
-			{FgColor: "", BgColor: ""}, // 5 mines
-			{FgColor: "", BgColor: ""}, // 6 mines
-			{FgColor: "", BgColor: ""}, // 7 mines
-			{FgColor: "", BgColor: ""}, // 8 mines
-		},
+			Label: Label{
+				Fg:        "",
+				Highlight: "",
+			},
 
-		PreserveGridBg: PreserveGridBgConfig{
-			Revealed: false,
-			Flag:     true,
-			Mine:     true,
+			Highlight: Checker{
+				Even: "#3a3a3a",
+				Odd:  "#454545",
+			},
+
+			Squares: Squares{
+				Even:     Style{Fg: "", Bg: "#1C2B1C"},
+				Odd:      Style{Fg: "", Bg: "#263726"},
+				Flagged:  Style{Fg: "#FFD580", Bg: ""},
+				Mined:    Style{Fg: "#800000", Bg: ""},
+				Exploded: Style{Fg: "", Bg: ""},
+
+				Hints: []Style{
+					{Fg: "", Bg: ""}, // 0 mines
+					{Fg: "", Bg: ""}, // 1 mines
+					{Fg: "", Bg: ""}, // 2 mines
+					{Fg: "", Bg: ""}, // 3 mines
+					{Fg: "", Bg: ""}, // 4 mines
+					{Fg: "", Bg: ""}, // 5 mines
+					{Fg: "", Bg: ""}, // 6 mines
+					{Fg: "", Bg: ""}, // 7 mines
+					{Fg: "", Bg: ""}, // 8 mines
+				},
+			},
+
+			PreserveGridBg: PreserveGridBg{
+				Revealed: false,
+				Flag:     true,
+				Mine:     true,
+			},
 		},
 	}
 }

@@ -12,12 +12,12 @@ import (
 // validate reports an error for any setting
 // the rest of the program can't work with.
 func (config Config) validate() error {
-	if config.Scrolloff < 0 {
-		return fmt.Errorf("scrolloff: must not be negative, got %d", config.Scrolloff)
+	if config.Behaviour.Scrolloff < 0 {
+		return fmt.Errorf("behaviour.scrolloff: must not be negative, got %d", config.Behaviour.Scrolloff)
 	}
 
-	if config.SideScrolloff < 0 {
-		return fmt.Errorf("sidescrolloff: must not be negative, got %d", config.SideScrolloff)
+	if config.Behaviour.SideScrolloff < 0 {
+		return fmt.Errorf("behaviour.sidescrolloff: must not be negative, got %d", config.Behaviour.SideScrolloff)
 	}
 
 	return nil

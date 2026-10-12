@@ -1,40 +1,40 @@
-# Chars
-# If you have a nerd font installed:
-# flag_char: "⚑"
-# mine_char: "󰚑"
-flag_char: "F"
-mine_char: "X"
+chars:
+  # If you have a nerd font installed:
+  # flag: "⚑"
+  # mine: "󰚑"
+  flag: "F"
+  mine: "X"
 
-# Colors
-text_color: "#cdd6f4"
-selected_color: "#89b4fa"
-border_color: "#f5c2e7"
+theme:
+  fg: "#cdd6f4"
+  selected: "#89b4fa"
+  border: "#f5c2e7"
 
-highlight_even_color: "#313244"
-highlight_odd_color: "#363a4f"
+  label:
+    fg: "#6c7086"
+    highlight: "#89b4fa"
 
-label_number_color: "#6c7086"
-highlight_label_number_color: "#89b4fa"
+  highlight:
+    even: "#313244"
+    odd: "#363a4f"
 
-even_square_style:
-  bg_color: "#1e1e2e"
+  squares:
+    even:
+      bg: "#1e1e2e"
+    odd:
+      bg: "#22212b"
+    mined:
+      bg: "#f38ba8"
+    hints:
+      - fg: ""
+      - fg: "#89b4fa"
+      - fg: "#a6e3a1"
+      - fg: "#f9e2af"
+      - fg: "#f5c2e7"
+      - fg: "#f38ba8"
+      - fg: "#cba6f7"
+      - fg: "#89b4fa"
+      - fg: "#f4dbd6"
 
-odd_square_style:
-  bg_color: "#22212b"
-
-mined_square_style:
-  bg_color: "#f38ba8"
-
-preserve_grid_bg:
-  mine: false
-
-square_mine_hint_style:
-  - fg_color: ""
-  - fg_color: "#89b4fa"
-  - fg_color: "#a6e3a1"
-  - fg_color: "#f9e2af"
-  - fg_color: "#f5c2e7"
-  - fg_color: "#f38ba8"
-  - fg_color: "#cba6f7"
-  - fg_color: "#89b4fa"
-  - fg_color: "#f4dbd6"
+  preserve_grid_bg:
+    mine: false

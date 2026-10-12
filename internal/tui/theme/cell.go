@@ -49,7 +49,7 @@ func (theme *Theme) CellStyle(cell minesweeper.Cell, isSelected, isHighlighted b
 func (theme *Theme) CellChar(cell minesweeper.Cell) string {
 	if cell.StateIs(minesweeper.Revealed) {
 		if cell.StateIs(minesweeper.Mined) {
-			return theme.config.MineChar
+			return theme.config.Chars.Mine
 		}
 
 		if cell.Adj == 0 {
@@ -60,16 +60,16 @@ func (theme *Theme) CellChar(cell minesweeper.Cell) string {
 	}
 
 	if cell.StateIs(minesweeper.Flagged) {
-		return theme.config.FlagChar
+		return theme.config.Chars.Flag
 	}
 
-	return theme.config.UnrevealedChar
+	return theme.config.Chars.Unrevealed
 }
 
 // handleGridBg Restores the checkerboard background on a square whose
 // kind is configured to keep it, and leaves every other square alone.
 func (theme *Theme) handleGridBg(style lg.Style, cell minesweeper.Cell) lg.Style {
-	preserve := theme.config.PreserveGridBg
+	preserve := theme.config.Theme.PreserveGridBg
 
 	var keep bool
 
@@ -97,7 +97,7 @@ func (theme *Theme) handleGridBg(style lg.Style, cell minesweeper.Cell) lg.Style
 
 // Returns the style for a revealed square, by its adjacent mine count.
 func (theme *Theme) hintStyle(cell minesweeper.Cell) lg.Style {
-	if cell.Adj < len(theme.config.SquareMineHintStyle) {
+	if cell.Adj < len(theme.config.Theme.Squares.Hints) {
 		return theme.squareMineHintColor[cell.Adj]
 	}
 
@@ -107,8 +107,8 @@ func (theme *Theme) hintStyle(cell minesweeper.Cell) lg.Style {
 // Returns the background a highlighted square takes, keeping the checkerboard.
 func (theme *Theme) highlightColor(cell minesweeper.Cell) string {
 	if cell.StateIs(minesweeper.Odd) {
-		return theme.config.HighlightOddColor
+		return theme.config.Theme.Highlight.Odd
 	}
 
-	return theme.config.HighlightEvenColor
+	return theme.config.Theme.Highlight.Even
 }

@@ -1,93 +1,94 @@
 # This are all the settings you can configure in a theme file.
 # all values in here are the default values, but you can omit any of these and it will just use the defaults instead.
 # empty values for colors will use the defaults/terminal colors.
+# WARN: This file must represent the default
+# values used in internal/config/config.go.
 
-# Game settings
-board_rows: 16
-board_cols: 16
-mine_count: 40
+board:
+  rows: 16
+  cols: 16
+  mines: 40
 
-# Minimum rows/columns kept visible between the cursor and the viewport edge
-# when scrolling, like nvim's 'scrolloff'/'sidescrolloff'. Only matters on
-# boards bigger than the terminal.
-scrolloff: 0
-sidescrolloff: 0
+behaviour:
+  # Minimum rows/columns kept visible between the cursor and the viewport edge
+  # when scrolling, like nvim's 'scrolloff'/'sidescrolloff'. Only matters on
+  # boards bigger than the terminal.
+  scrolloff: 0
+  sidescrolloff: 0
 
-# Chars
-flag_char: "F"
-mine_char: "X"
-unrevealed_char: " "
+layout:
+  # highlight and number allow for directional control of their feature:
+  # Any of "left", "right", "top", "bottom", or a list of them, e.g. [left, top].
+  # "horizontal" = [left, right], "vertical" = [top, bottom], "all" = every side,
+  # "" or "none" to disable.
+  highlight: "" # lights up the cells in those directions from the cursor
+  numbers: "" # shows the coordenate of the square in the gutter
 
-# Colors
-fg_color: "" # Used as the default fg color for all text, and fg color for squares if not set in their specific style
-selected_color: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
-border_color: "" # Missing a field is also fine, will use defaults/terminal colors
-bg_color: "" # Used as the default bg color for the window and squares if not set in their specific style
+  relative_line_numbers: false # if true, row numbers show distance from the cursor's row, like nvim's relativenumber
+  relative_column_numbers: false # if true, column numbers show distance from the cursor's column
 
-# highlight and number allow for directional control of their feature:
-# Any of "left", "right", "top", "bottom", or a list of them, e.g. [left, top].
-# "horizontal" = [left, right], "vertical" = [top, bottom], "all" = every side,
-# "" or "none" to disable.
-highlight: "" # lights up the cells in those directions from the cursor
-numbers: "" # shows the coordenate of the square in the gutter
+chars:
+  flag: "F"
+  mine: "X"
+  unrevealed: " "
 
-highlight_even_color: "#3a3a3a" # bg color for highlighted even squares
-highlight_odd_color: "#454545" # bg color for highlighted odd squares
+theme:
+  fg: "" # Used as the default fg color for all text, and fg color for squares if not set in their specific style
+  bg: "" # Used as the default bg color for the window and squares if not set in their specific style
+  selected: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
+  border: "" # Missing a field is also fine, will use defaults/terminal colors
 
-relative_line_numbers: false # if true, row numbers show distance from the cursor's row, like nvim's relativenumber
-relative_column_numbers: false # if true, column numbers show distance from the cursor's column
+  label:
+    fg: "" # fg color for row/column numbers not on the cursor's row/column
+    highlight: "" # fg color for the row/column number on the cursor's row/column
 
-label_number_color: "" # fg color for row/column numbers not on the cursor's row/column
-highlight_label_number_color: "" # fg color for the row/column number on the cursor's row/column
+  # bg colors for the squares lit up by layout.highlight
+  highlight:
+    even: "#3a3a3a"
+    odd: "#454545"
 
-# Square styles
-even_square_style:
-  fg_color: "" # defaults to fg_color if omitted
-  bg_color: "#1C2B1C" # defaults to bg_color if omitted
+  # each style can set `fg` and `bg`, defaulting to theme.fg and theme.bg if omitted
+  squares:
+    even:
+      fg: ""
+      bg: "#1C2B1C"
+    odd:
+      fg: ""
+      bg: "#263726"
+    flagged:
+      fg: "#FFD580"
+      bg: ""
+    mined:
+      fg: "#800000"
+      bg: ""
+    exploded: # defaults to squares.mined if omitted
+      fg: ""
+      bg: ""
 
-odd_square_style:
-  fg_color: "" # defaults to fg_color if omitted
-  bg_color: "#263726" # defaults to bg_color if omitted
+    # list of styles by adjacent mine count, in order
+    hints:
+      # revealed (0 adjacent mines)
+      - fg: ""
+        bg: ""
+      # 1-8 adjacent mines
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
+      - fg: ""
+        bg: ""
 
-flagged_square_style:
-  fg_color: "#FFD580" # defaults to fg_color if omitted
-  bg_color: "" # defaults to bg_color if omitted
-
-mined_square_style:
-  fg_color: "#800000" # defaults to fg_color if omitted
-  bg_color: "" # defaults to bg_color if omitted
-
-exploded_square_style:
-  fg_color: "" # defaults to mined_square_style.fg_color if omitted
-  bg_color: "" # defaults to mined_square_style.bg_color if omitted
-
-preserve_grid_bg:
-  revealed: false # if true, revealed squares will use the same bg color odd/even squares
-  flag: true # if true, flagged squares will use the same bg color odd/even squares
-  mine: true # if true, mined squares will use the same bg color odd/even squares
-
-# list of styles for the numbers 1-8, in order
-# each entry can set `fg_color` and `bg_color`
-# - fg_color: "" # defaults to fg_color if omitted
-#   bg_color: "" # defaults to bg_color if omitted
-square_mine_hint_style:
-  # revealed (0 adjacent mines)
-  - fg_color: ""
-    bg_color: ""
-  # 1-8 adjacent mines
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
-  - fg_color: ""
-    bg_color: ""
+  preserve_grid_bg:
+    revealed: false # if true, revealed squares will use the same bg color odd/even squares
+    flag: true # if true, flagged squares will use the same bg color odd/even squares
+    mine: true # if true, mined squares will use the same bg color odd/even squares

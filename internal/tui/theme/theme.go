@@ -42,13 +42,13 @@ func NewTheme(cfg config.Config) *Theme {
 	theme := &Theme{
 		config: cfg,
 
-		Numbers:               cfg.Numbers,
-		RelativeLineNumbers:   cfg.RelativeLineNumbers,
-		RelativeColumnNumbers: cfg.RelativeColumnNumbers,
-		Highlight:             cfg.Highlight,
+		Numbers:               cfg.Layout.Numbers,
+		RelativeLineNumbers:   cfg.Layout.RelativeLineNumbers,
+		RelativeColumnNumbers: cfg.Layout.RelativeColumnNumbers,
+		Highlight:             cfg.Layout.Highlight,
 
-		Scrolloff:     cfg.Scrolloff,
-		SideScrolloff: cfg.SideScrolloff,
+		Scrolloff:     cfg.Behaviour.Scrolloff,
+		SideScrolloff: cfg.Behaviour.SideScrolloff,
 	}
 	theme.setStyles()
 
@@ -73,43 +73,45 @@ func withBg(base lg.Style, color string) lg.Style {
 	return base.Background(lg.Color(color))
 }
 
-func styleFromConfig(baseStyle lg.Style, configStyle config.SquareStyleConfig) lg.Style {
+func styleFromConfig(baseStyle lg.Style, configStyle config.Style) lg.Style {
 	style := lg.NewStyle().Inherit(baseStyle)
 
-	return withBg(withFg(style, configStyle.FgColor), configStyle.BgColor)
+	return withBg(withFg(style, configStyle.Fg), configStyle.Bg)
 }
 
 // Updates styles based on the current configuration.
 func (theme *Theme) setStyles() {
-	genericStyle := withFg(lg.NewStyle().Align(lg.Center), theme.config.FgColor)
+	colors, squares := theme.config.Theme, theme.config.Theme.Squares
+
+	genericStyle := withFg(lg.NewStyle().Align(lg.Center), colors.Fg)
 	genericMenuTextStyle := lg.NewStyle().Inherit(genericStyle).Bold(true)
 
 	theme.TextStyle = lg.NewStyle().Inherit(genericStyle)
 	theme.TitleStyle = lg.NewStyle().Inherit(genericMenuTextStyle)
-	theme.SelectedMenuTextStyle = withFg(lg.NewStyle().Inherit(genericMenuTextStyle), theme.config.SelectedColor)
-	theme.selectedSquareStyle = withBg(lg.NewStyle().Inherit(genericMenuTextStyle), theme.config.SelectedColor)
+	theme.SelectedMenuTextStyle = withFg(lg.NewStyle().Inherit(genericMenuTextStyle), colors.Selected)
+	theme.selectedSquareStyle = withBg(lg.NewStyle().Inherit(genericMenuTextStyle), colors.Selected)
 
-	theme.labelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), theme.config.LabelNumberColor)
-	theme.highlightLabelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), theme.config.HighlightLabelNumberColor)
+	theme.labelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), colors.Label.Fg)
+	theme.highlightLabelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), colors.Label.Highlight)
 
-	theme.evenSquareStyle = styleFromConfig(genericStyle, theme.config.EvenSquareStyle)
-	theme.oddSquareStyle = styleFromConfig(genericStyle, theme.config.OddSquareStyle)
-	theme.flaggedSquareStyle = styleFromConfig(genericStyle, theme.config.FlaggedSquareStyle)
-	theme.minedSquareStyle = styleFromConfig(genericStyle, theme.config.MinedSquareStyle)
-	theme.explodedSquareStyle = styleFromConfig(theme.minedSquareStyle, theme.config.ExplodedSquareStyle)
+	theme.evenSquareStyle = styleFromConfig(genericStyle, squares.Even)
+	theme.oddSquareStyle = styleFromConfig(genericStyle, squares.Odd)
+	theme.flaggedSquareStyle = styleFromConfig(genericStyle, squares.Flagged)
+	theme.minedSquareStyle = styleFromConfig(genericStyle, squares.Mined)
+	theme.explodedSquareStyle = styleFromConfig(theme.minedSquareStyle, squares.Exploded)
 
-	theme.squareMineHintColor = make([]lg.Style, len(theme.config.SquareMineHintStyle))
-	for i, hintConfig := range theme.config.SquareMineHintStyle {
+	theme.squareMineHintColor = make([]lg.Style, len(squares.Hints))
+	for i, hintConfig := range squares.Hints {
 		theme.squareMineHintColor[i] = styleFromConfig(genericStyle, hintConfig)
 	}
 
-	theme.ArrowStyle = withBg(withFg(lg.NewStyle(), theme.config.BorderColor), theme.config.BgColor)
+	theme.ArrowStyle = withBg(withFg(lg.NewStyle(), colors.Border), colors.Bg)
 
-	theme.WindowStyle = withBg(lg.NewStyle(), theme.config.BgColor).
+	theme.WindowStyle = withBg(lg.NewStyle(), colors.Bg).
 		Padding(0, 1).
 		Border(lg.RoundedBorder()).
-		BorderBackground(lg.Color(theme.config.BgColor)).
-		BorderForeground(lg.Color(theme.config.BorderColor)).
+		BorderBackground(lg.Color(colors.Bg)).
+		BorderForeground(lg.Color(colors.Border)).
 		Align(lg.Center)
 }
 

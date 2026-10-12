@@ -68,8 +68,8 @@ func gameSettings(cfg config.Config) minesweeper.Settings {
 
 func settingsFrom(cfg config.Config) minesweeper.Settings {
 	return minesweeper.Settings{
-		Rows:  cfg.BoardRows,
-		Cols:  cfg.BoardCols,
-		Mines: cfg.MineCount,
+		Rows:  cfg.Board.Rows,
+		Cols:  cfg.Board.Cols,
+		Mines: cfg.Board.Mines,
 	}
 }
