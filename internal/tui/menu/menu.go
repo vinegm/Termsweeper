@@ -3,6 +3,7 @@ package menu
 import (
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -12,14 +13,19 @@ import (
 
 type menuOption int
 
+// Menu options that can be selected by the user.
 const (
 	continueGame menuOption = iota
 	startNewGame
 	boardRows
 	boardCols
 	mineCount
+	seed
 	quit
 )
+
+// Longest seed that can be typed in the menu.
+const maxSeedLen = 32
 
 // A single selectable row of the menu.
 type menuItem struct {
@@ -40,6 +46,7 @@ type (
 type Window struct {
 	Choice      int
 	OngoingGame bool
+	EditingSeed bool
 	Settings    minesweeper.Settings
 
 	theme *theme.Theme
@@ -56,6 +63,11 @@ func New(th *theme.Theme, settings minesweeper.Settings) *Window {
 func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
+		if window.EditingSeed {
+			window.editSeed(msg)
+			return nil
+		}
+
 		return window.handleKey(strings.ToLower(msg.String()))
 	}
 
@@ -109,6 +121,7 @@ func (window *Window) items() []menuItem {
 		menuItem{fmt.Sprintf("Board Rows: %d", window.Settings.Rows), boardRows},
 		menuItem{fmt.Sprintf("Board Cols: %d", window.Settings.Cols), boardCols},
 		menuItem{fmt.Sprintf("Mines: %d", window.Settings.Mines), mineCount},
+		menuItem{window.seedLabel(), seed},
 		menuItem{"Quit", quit},
 	)
 }
@@ -146,6 +159,9 @@ func (window *Window) handleKey(key string) tea.Cmd {
 				return StartGameMsg{Settings: chosen}
 			}
 
+		case seed:
+			window.EditingSeed = true
+
 		case quit:
 			return tea.Quit
 		}
@@ -155,6 +171,40 @@ func (window *Window) handleKey(key string) tea.Cmd {
 	}
 
 	return nil
+}
+
+// editSeed handles key presses while editing the seed.
+func (window *Window) editSeed(msg tea.KeyPressMsg) {
+	text := &window.Settings.Seed
+
+	switch msg.String() {
+	case "enter", "esc":
+		window.EditingSeed = false
+
+	case "backspace":
+		_, size := utf8.DecodeLastRuneInString(*text)
+		*text = (*text)[:len(*text)-size]
+
+	default:
+		isText := msg.Text != ""
+		fits := utf8.RuneCountInString(*text+msg.Text) <= maxSeedLen
+
+		if isText && fits {
+			*text += msg.Text
+		}
+	}
+}
+
+func (window *Window) seedLabel() string {
+	if window.EditingSeed {
+		return "Seed: " + window.Settings.Seed + "_"
+	}
+
+	if window.Settings.Seed == "" {
+		return "Seed: random"
+	}
+
+	return "Seed: " + window.Settings.Seed
 }
 
 // adjust steps the setting the given menu row edits.

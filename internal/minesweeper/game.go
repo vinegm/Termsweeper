@@ -1,7 +1,9 @@
 package minesweeper
 
 import (
+	"hash/fnv"
 	"math/rand"
+	"time"
 )
 
 type CellState int
@@ -42,6 +44,7 @@ type Game struct {
 
 	board [][]Cell
 	state GameState // bitmasked state of the game
+	rng   *rand.Rand
 
 	usedFlags   int // flags used by the player
 	numCells    int // total cells count
@@ -71,14 +74,34 @@ func New(settings Settings) *Game {
 	}
 
 	numCells := settings.Rows * settings.Cols
+
+	randSource := rand.NewSource(
+		seedFrom(settings.Seed),
+	)
+
 	return &Game{
 		Timer:    Timer{},
 		settings: settings,
 		board:    board,
 		state:    FirstMove,
+		rng:      rand.New(randSource),
 		numCells: numCells,
 		numSafe:  numCells - settings.Mines,
 	}
+}
+
+// seedFrom hashes a seed string into a random source seed.
+//
+//	NOTE: a empty string returns a random seed.
+func seedFrom(seed string) int64 {
+	if seed == "" {
+		return time.Now().UnixNano()
+	}
+
+	hash := fnv.New64a()
+	hash.Write([]byte(seed))
+
+	return int64(hash.Sum64())
 }
 
 // Board dimensions.
@@ -115,8 +138,8 @@ func (game *Game) forEachNeighbour(row, col int, fn func(r, c int)) {
 func (game *Game) placeMines(firstR, firstC int) {
 	placed := 0
 	for placed < game.settings.Mines {
-		row := rand.Intn(game.settings.Rows)
-		col := rand.Intn(game.settings.Cols)
+		row := game.rng.Intn(game.settings.Rows)
+		col := game.rng.Intn(game.settings.Cols)
 		if game.board[row][col].StateIs(Mined) {
 			continue
 		}

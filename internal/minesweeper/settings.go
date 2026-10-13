@@ -14,6 +14,7 @@ type Settings struct {
 	Rows  int
 	Cols  int
 	Mines int
+	Seed  string // mine layout seed
 }
 
 // MaxMines is the most mines a board this size can hold: the first revealed
