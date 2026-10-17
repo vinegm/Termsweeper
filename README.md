@@ -52,7 +52,7 @@ Command line flags:
 
 ## Configuration
 
-Configuration is read at startup from `$XDG_CONFIG_HOME/termsweeper/config.yaml` (`~/.config/termsweeper/config.yaml` when `XDG_CONFIG_HOME` is unset). The file is optional: anything it leaves out keeps its built-in default (see `internal/config/config.go`), an unparsable or invalid file falls back to the defaults entirely, and a board size or mine count no game can be played on falls back to the default board. An example config is provided at `Themes/example-config.yaml`.
+Configuration is read at startup from `$XDG_CONFIG_HOME/termsweeper/config.yaml` (`~/.config/termsweeper/config.yaml` when `XDG_CONFIG_HOME` is unset). The file is optional: anything it leaves out keeps its built-in default (see `internal/config/config.go`), an unparsable file falls back to the defaults entirely, a setting out of range is brought back into it, and a board size or mine count no game can be played on falls back to the default board. An example config is provided at `Themes/example-config.yaml`.
 
 Configurable items include board rows/columns, mine count, characters for mines/flags/unrevealed cells, and many color settings for cells and UI elements.
 

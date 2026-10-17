@@ -1,7 +1,6 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -9,18 +8,11 @@ import (
 	"github.com/vinegm/termsweeper/internal/storage/paths"
 )
 
-// validate reports an error for any setting
-// the rest of the program can't work with.
-func (config Config) validate() error {
-	if config.Behaviour.Scrolloff < 0 {
-		return fmt.Errorf("behaviour.scrolloff: must not be negative, got %d", config.Behaviour.Scrolloff)
-	}
-
-	if config.Behaviour.SideScrolloff < 0 {
-		return fmt.Errorf("behaviour.sidescrolloff: must not be negative, got %d", config.Behaviour.SideScrolloff)
-	}
-
-	return nil
+// clamp brings each setting the rest of the program can't work with
+// back into range, keeping the rest of the file.
+func (config *Config) clamp() {
+	config.Behaviour.Scrolloff = max(config.Behaviour.Scrolloff, 0)
+	config.Behaviour.SideScrolloff = max(config.Behaviour.SideScrolloff, 0)
 }
 
 // Loads configuration from file. The returned config is always usable:
@@ -37,9 +29,7 @@ func Load(path string) (Config, error) {
 		return Default(), err
 	}
 
-	if err := config.validate(); err != nil {
-		return Default(), err
-	}
+	config.clamp()
 
 	return config, nil
 }
