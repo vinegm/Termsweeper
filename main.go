@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"log"
+	"os"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -63,7 +64,7 @@ func loadConfig(noConfig bool, path string) config.Config {
 
 	cfg, err := config.Load(cmp.Or(path, config.DefaultPath()))
 	if err != nil && (!errors.Is(err, fs.ErrNotExist) || path != "") {
-		log.Printf("Could not load config: %v", err)
+		warn("could not load config: %v", err)
 	}
 
 	return cfg
@@ -74,12 +75,21 @@ func gameSettings(cfg config.Config) minesweeper.Settings {
 	settings := settingsFrom(cfg)
 
 	if err := settings.Validate(); err != nil {
-		log.Printf("Invalid board settings, using the defaults: %v", err)
+		warn("invalid board settings, using the defaults: %v", err)
 
 		return settingsFrom(config.Default())
 	}
 
 	return settings
+}
+
+// warn reports a problem found before the TUI starts, on
+// stderr so it is seen without -debug, and in the debug log.
+func warn(format string, args ...any) {
+	text := fmt.Sprintf(format, args...)
+
+	fmt.Fprintln(os.Stderr, "warning: "+text)
+	log.Print(text)
 }
 
 func settingsFrom(cfg config.Config) minesweeper.Settings {
