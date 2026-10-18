@@ -11,13 +11,8 @@ import (
 type Theme struct {
 	config config.Config
 
-	Highlight                 Edge
 	highlightLabelNumberStyle lg.Style
-
-	Numbers               Edge
-	labelNumberStyle      lg.Style
-	RelativeLineNumbers   bool
-	RelativeColumnNumbers bool
+	labelNumberStyle          lg.Style
 
 	TextStyle             lg.Style
 	TitleStyle            lg.Style
@@ -32,24 +27,12 @@ type Theme struct {
 	squareMineHintColor []lg.Style
 	explodedSquareStyle lg.Style
 
-	WindowStyle   lg.Style
-	ArrowStyle    lg.Style
-	Scrolloff     int
-	SideScrolloff int
+	WindowStyle lg.Style
+	ArrowStyle  lg.Style
 }
 
 func NewTheme(cfg config.Config) *Theme {
-	theme := &Theme{
-		config: cfg,
-
-		Numbers:               cfg.Layout.Numbers,
-		RelativeLineNumbers:   cfg.Layout.RelativeLineNumbers,
-		RelativeColumnNumbers: cfg.Layout.RelativeColumnNumbers,
-		Highlight:             cfg.Layout.Highlight,
-
-		Scrolloff:     cfg.Behaviour.Scrolloff,
-		SideScrolloff: cfg.Behaviour.SideScrolloff,
-	}
+	theme := &Theme{config: cfg}
 	theme.setStyles()
 
 	return theme

@@ -47,7 +47,18 @@ func New(cfg config.Config, settings minesweeper.Settings) Model {
 	return Model{
 		currentWindow: menuWindow,
 		menu:          menuWindow,
-		board:         board.New(th),
+		board:         board.New(th, boardOptions(cfg)),
+	}
+}
+
+func boardOptions(cfg config.Config) board.Options {
+	return board.Options{
+		Highlight:             cfg.Layout.Highlight,
+		Numbers:               cfg.Layout.Numbers,
+		RelativeLineNumbers:   cfg.Layout.RelativeLineNumbers,
+		RelativeColumnNumbers: cfg.Layout.RelativeColumnNumbers,
+		Scrolloff:             cfg.Behaviour.Scrolloff,
+		SideScrolloff:         cfg.Behaviour.SideScrolloff,
 	}
 }
 

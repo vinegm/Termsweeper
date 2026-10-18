@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vinegm/termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/config"
 )
 
 // rowLabel renders the number shown on one side of a board row, full width so
@@ -15,7 +15,7 @@ func (window *Window) rowLabel(row int, show bool) string {
 		return ""
 	}
 
-	number := labelNumber(row, window.CursorRow, window.theme.RelativeLineNumbers)
+	number := labelNumber(row, window.CursorRow, window.opts.RelativeLineNumbers)
 	text := fmt.Sprintf("%*d ", window.rowNumberDigits(), number)
 
 	return window.theme.LabelStyle(row, window.CursorRow).Render(text)
@@ -27,8 +27,8 @@ func (window *Window) rowLabel(row int, show bool) string {
 // numbers stack vertically there instead of overflowing sideways.
 func (window *Window) columnLabels(visibleCols int) string {
 	height := window.columnNumberDigits()
-	leftPad := window.theme.TextStyle.Render(strings.Repeat(" ", window.labelPadding(window.theme.Numbers.Has(theme.EdgeLeft))))
-	rightPad := window.theme.TextStyle.Render(strings.Repeat(" ", window.labelPadding(window.theme.Numbers.Has(theme.EdgeRight))))
+	leftPad := window.theme.TextStyle.Render(strings.Repeat(" ", window.labelPadding(window.opts.Numbers.Has(config.EdgeLeft))))
+	rightPad := window.theme.TextStyle.Render(strings.Repeat(" ", window.labelPadding(window.opts.Numbers.Has(config.EdgeRight))))
 
 	lines := make([]string, height)
 
@@ -37,7 +37,7 @@ func (window *Window) columnLabels(visibleCols int) string {
 		sb.WriteString(leftPad)
 
 		for col := window.offsetCol; col < window.offsetCol+visibleCols; col++ {
-			number := labelNumber(col, window.CursorCol, window.theme.RelativeColumnNumbers)
+			number := labelNumber(col, window.CursorCol, window.opts.RelativeColumnNumbers)
 			digit := fmt.Sprintf("%*d", height, number)[row]
 
 			sb.WriteString(window.theme.LabelStyle(col, window.CursorCol).Render(string(digit) + " "))

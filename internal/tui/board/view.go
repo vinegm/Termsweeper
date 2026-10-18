@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/vinegm/termsweeper/internal/config"
 	"github.com/vinegm/termsweeper/internal/minesweeper"
 	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
@@ -20,10 +21,10 @@ func (window *Window) View(width, height int) string {
 	sb.WriteString("\n")
 	sb.WriteString(window.theme.TextStyle.Render(window.hint()))
 	sb.WriteString("\n")
-	sb.WriteString(window.gutter(clipped.Has(theme.EdgeTop), theme.ArrowUp))
+	sb.WriteString(window.gutter(clipped.Has(config.EdgeTop), theme.ArrowUp))
 	sb.WriteString("\n")
 
-	if window.theme.Numbers.Has(theme.EdgeTop) {
+	if window.opts.Numbers.Has(config.EdgeTop) {
 		sb.WriteString(window.columnLabels(visibleCols))
 		sb.WriteString("\n")
 	}
@@ -34,8 +35,8 @@ func (window *Window) View(width, height int) string {
 	for row := window.offsetRow; row < window.offsetRow+visibleRows; row++ {
 		onArrowRow := row == arrowRow
 
-		sb.WriteString(window.gutter(clipped.Has(theme.EdgeLeft) && onArrowRow, theme.ArrowLeft))
-		sb.WriteString(window.rowLabel(row, window.theme.Numbers.Has(theme.EdgeLeft)))
+		sb.WriteString(window.gutter(clipped.Has(config.EdgeLeft) && onArrowRow, theme.ArrowLeft))
+		sb.WriteString(window.rowLabel(row, window.opts.Numbers.Has(config.EdgeLeft)))
 
 		for col := window.offsetCol; col < window.offsetCol+visibleCols; col++ {
 			cell := window.game.Cell(row, col)
@@ -50,39 +51,39 @@ func (window *Window) View(width, height int) string {
 			sb.WriteString(style.Render(char + " "))
 		}
 
-		sb.WriteString(window.rowLabel(row, window.theme.Numbers.Has(theme.EdgeRight)))
-		sb.WriteString(window.gutter(clipped.Has(theme.EdgeRight) && onArrowRow, theme.ArrowRight))
+		sb.WriteString(window.rowLabel(row, window.opts.Numbers.Has(config.EdgeRight)))
+		sb.WriteString(window.gutter(clipped.Has(config.EdgeRight) && onArrowRow, theme.ArrowRight))
 		sb.WriteString("\n")
 	}
 
-	if window.theme.Numbers.Has(theme.EdgeBottom) {
+	if window.opts.Numbers.Has(config.EdgeBottom) {
 		sb.WriteString(window.columnLabels(visibleCols))
 		sb.WriteString("\n")
 	}
 
-	sb.WriteString(window.gutter(clipped.Has(theme.EdgeBottom), theme.ArrowDown))
+	sb.WriteString(window.gutter(clipped.Has(config.EdgeBottom), theme.ArrowDown))
 
 	return window.theme.WindowStyle.Render(sb.String())
 }
 
 // clippedEdges reports which edges of the board the window clips.
-func (window *Window) clippedEdges(visibleRows, visibleCols int) theme.Edge {
-	var clipped theme.Edge
+func (window *Window) clippedEdges(visibleRows, visibleCols int) config.EdgeSetting {
+	var clipped config.EdgeSetting
 
 	if window.offsetRow > 0 {
-		clipped |= theme.EdgeTop
+		clipped |= config.EdgeTop
 	}
 
 	if window.offsetRow+visibleRows < window.game.Rows() {
-		clipped |= theme.EdgeBottom
+		clipped |= config.EdgeBottom
 	}
 
 	if window.offsetCol > 0 {
-		clipped |= theme.EdgeLeft
+		clipped |= config.EdgeLeft
 	}
 
 	if window.offsetCol+visibleCols < window.game.Cols() {
-		clipped |= theme.EdgeRight
+		clipped |= config.EdgeRight
 	}
 
 	return clipped
@@ -103,22 +104,22 @@ func (window *Window) gutter(showArrow bool, arrow string) string {
 // isHighlighted reports whether a cell falls in
 // the cursor's highlighted row or column.
 func (window *Window) isHighlighted(row, col int) bool {
-	side := window.theme.Highlight
+	side := window.opts.Highlight
 	onCursorRow := row == window.CursorRow
 	onCursorCol := col == window.CursorCol
 
 	switch {
 	case onCursorRow && col < window.CursorCol:
-		return side.Has(theme.EdgeLeft)
+		return side.Has(config.EdgeLeft)
 
 	case onCursorRow && col > window.CursorCol:
-		return side.Has(theme.EdgeRight)
+		return side.Has(config.EdgeRight)
 
 	case onCursorCol && row < window.CursorRow:
-		return side.Has(theme.EdgeTop)
+		return side.Has(config.EdgeTop)
 
 	case onCursorCol && row > window.CursorRow:
-		return side.Has(theme.EdgeBottom)
+		return side.Has(config.EdgeBottom)
 
 	default:
 		return false

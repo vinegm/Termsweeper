@@ -6,6 +6,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
+	"github.com/vinegm/termsweeper/internal/config"
 	"github.com/vinegm/termsweeper/internal/minesweeper"
 	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
@@ -26,6 +27,22 @@ type (
 	clockTickMsg struct{ tag int }
 )
 
+// Options is how the board is laid out around the
+// cursor and how it scrolls, from the config.
+type Options struct {
+	// Directions out from the cursor its row/column highlight extends in
+	Highlight config.EdgeSetting
+
+	// Board edges the row/column coordinate labels are drawn on
+	Numbers               config.EdgeSetting
+	RelativeLineNumbers   bool
+	RelativeColumnNumbers bool
+
+	// Rows/columns kept visible between the cursor and the viewport edge
+	Scrolloff     int
+	SideScrolloff int
+}
+
 // Implements the game/board screen and holds its view state.
 type Window struct {
 	CursorRow int
@@ -39,6 +56,7 @@ type Window struct {
 	countBuffer string
 
 	theme    *theme.Theme
+	opts     Options
 	game     *minesweeper.Game
 	settings minesweeper.Settings
 
@@ -49,8 +67,11 @@ type Window struct {
 // New initializes a new Window.
 //
 //	NOTE: The game is not started until newGame() is called.
-func New(th *theme.Theme) *Window {
-	return &Window{theme: th}
+func New(th *theme.Theme, opts Options) *Window {
+	return &Window{
+		theme: th,
+		opts:  opts,
+	}
 }
 
 // NewGame Starts a fresh game from the given settings.

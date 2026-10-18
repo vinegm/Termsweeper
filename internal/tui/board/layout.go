@@ -1,18 +1,18 @@
 package board
 
 import (
-	"github.com/vinegm/termsweeper/internal/tui/theme"
+	"github.com/vinegm/termsweeper/internal/config"
 )
 
 // chromeWidth is the horizontal space taken by everything but the grid itself.
 func (window *Window) chromeWidth() int {
 	width := boardChromeWidth
 
-	if window.theme.Numbers.Has(theme.EdgeLeft) {
+	if window.opts.Numbers.Has(config.EdgeLeft) {
 		width += window.rowNumberDigits() + 1
 	}
 
-	if window.theme.Numbers.Has(theme.EdgeRight) {
+	if window.opts.Numbers.Has(config.EdgeRight) {
 		width += window.rowNumberDigits() + 1
 	}
 
@@ -23,11 +23,11 @@ func (window *Window) chromeWidth() int {
 func (window *Window) chromeHeight() int {
 	height := boardChromeHeight
 
-	if window.theme.Numbers.Has(theme.EdgeTop) {
+	if window.opts.Numbers.Has(config.EdgeTop) {
 		height += window.columnNumberDigits()
 	}
 
-	if window.theme.Numbers.Has(theme.EdgeBottom) {
+	if window.opts.Numbers.Has(config.EdgeBottom) {
 		height += window.columnNumberDigits()
 	}
 
@@ -50,8 +50,8 @@ func (window *Window) scrollToCursor(width, height int) {
 
 	visibleRows, visibleCols := window.viewport(width, height)
 
-	window.offsetRow = scrollOffset(window.offsetRow, window.CursorRow, visibleRows, window.game.Rows(), window.theme.Scrolloff)
-	window.offsetCol = scrollOffset(window.offsetCol, window.CursorCol, visibleCols, window.game.Cols(), window.theme.SideScrolloff)
+	window.offsetRow = scrollOffset(window.offsetRow, window.CursorRow, visibleRows, window.game.Rows(), window.opts.Scrolloff)
+	window.offsetCol = scrollOffset(window.offsetCol, window.CursorCol, visibleCols, window.game.Cols(), window.opts.SideScrolloff)
 }
 
 // scrollOffset returns the new offset, which may be the same as the old one.
