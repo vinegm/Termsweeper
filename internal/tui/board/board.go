@@ -48,6 +48,10 @@ type Window struct {
 	CursorRow int
 	CursorCol int
 
+	// Terminal size the window is drawn in.
+	width  int
+	height int
+
 	// Board cell shown at the top-left of the window.
 	offsetRow int
 	offsetCol int
@@ -116,6 +120,15 @@ func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	}
 
 	return nil
+}
+
+// SetSize stores the size the window is drawn in
+// and scrolls to keep the cursor in view.
+func (window *Window) SetSize(width, height int) {
+	window.width = width
+	window.height = height
+
+	window.scrollToCursor()
 }
 
 func (window *Window) startClock() tea.Cmd {

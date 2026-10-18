@@ -9,10 +9,8 @@ import (
 	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
-func (window *Window) View(width, height int) string {
-	window.scrollToCursor(width, height)
-
-	visibleRows, visibleCols := window.viewport(width, height)
+func (window *Window) View() string {
+	visibleRows, visibleCols := window.viewport()
 	clipped := window.clippedEdges(visibleRows, visibleCols)
 
 	var sb strings.Builder
