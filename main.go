@@ -24,35 +24,50 @@ const (
 
 var version = "dev"
 
+type flags struct {
+	debug       bool
+	debugFile   string
+	showVersion bool
+	noConfig    bool
+	configPath  string
+}
+
 func main() {
-	debug := flag.Bool("debug", false, "enable debug mode")
-	debugFile := flag.String("debug-file", logFile, "path to debug log file (ignored if --debug is not set)")
-	showVersion := flag.Bool("version", false, "print the version and exit")
-	noConfig := flag.Bool("no-config", false, "ignore config.yaml and run with the built-in defaults")
-	configPath := flag.String("config", "", "config file to load instead of the default path")
+	opts := parseFlags()
 
-	flag.Parse()
-
-	if *showVersion {
+	if opts.showVersion {
 		fmt.Println("termsweeper version", version)
 		return
 	}
 
 	log.SetOutput(io.Discard)
-	if *debug {
-		file, err := tea.LogToFile(*debugFile, logLevel)
+	if opts.debug {
+		file, err := tea.LogToFile(opts.debugFile, logLevel)
 		if err != nil {
 			log.Fatal(err)
 		}
 		defer file.Close()
 	}
 
-	cfg := loadConfig(*noConfig, *configPath)
+	cfg := loadConfig(opts.noConfig, opts.configPath)
 
 	program := tea.NewProgram(tui.New(cfg, gameSettings(cfg)))
 	if _, err := program.Run(); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func parseFlags() flags {
+	var opts flags
+
+	flag.BoolVar(&opts.debug, "debug", false, "enable debug mode")
+	flag.StringVar(&opts.debugFile, "debug-file", logFile, "path to debug log file (ignored if --debug is not set)")
+	flag.BoolVar(&opts.showVersion, "version", false, "print the version and exit")
+	flag.BoolVar(&opts.noConfig, "no-config", false, "ignore config.yaml and run with the built-in defaults")
+	flag.StringVar(&opts.configPath, "config", "", "config file to load instead of the default path")
+	flag.Parse()
+
+	return opts
 }
 
 // loadConfig returns the defaults with -no-config, else the file at
