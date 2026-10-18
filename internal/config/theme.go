@@ -1,5 +1,7 @@
 package config
 
+import "slices"
+
 // Theme is every colour the windows render with.
 type Theme struct {
 	Fg       string `yaml:"fg"`       // default fg for all text and squares
@@ -48,4 +50,32 @@ type PreserveGridBg struct {
 	Revealed bool `yaml:"revealed"`
 	Flag     bool `yaml:"flag"`
 	Mine     bool `yaml:"mine"`
+}
+
+// Resolve fills each unset colour from the one it inherits.
+func (theme Theme) Resolve() Theme {
+	fallback(&theme.Label.Fg, theme.Fg)
+	fallback(&theme.Label.Highlight, theme.Fg)
+
+	squares := &theme.Squares
+
+	fallback(&squares.Even.Fg, theme.Fg)
+	fallback(&squares.Odd.Fg, theme.Fg)
+	fallback(&squares.Flagged.Fg, theme.Fg)
+	fallback(&squares.Mined.Fg, theme.Fg)
+	fallback(&squares.Exploded.Fg, squares.Mined.Fg)
+	fallback(&squares.Exploded.Bg, squares.Mined.Bg)
+
+	squares.Hints = slices.Clone(squares.Hints)
+	for i := range squares.Hints {
+		fallback(&squares.Hints[i].Fg, theme.Fg)
+	}
+
+	return theme
+}
+
+func fallback(colour *string, parent string) {
+	if *colour == "" {
+		*colour = parent
+	}
 }

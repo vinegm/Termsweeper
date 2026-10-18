@@ -56,36 +56,34 @@ func withBg(base lg.Style, color string) lg.Style {
 	return base.Background(lg.Color(color))
 }
 
-func styleFromConfig(baseStyle lg.Style, configStyle config.Style) lg.Style {
-	style := lg.NewStyle().Inherit(baseStyle)
-
-	return withBg(withFg(style, configStyle.Fg), configStyle.Bg)
+func styleFromConfig(base lg.Style, configStyle config.Style) lg.Style {
+	return withBg(withFg(base, configStyle.Fg), configStyle.Bg)
 }
 
 // Updates styles based on the current configuration.
 func (theme *Theme) setStyles() {
-	colors, squares := theme.config.Theme, theme.config.Theme.Squares
+	colors := theme.config.Theme.Resolve()
+	squares := colors.Squares
 
-	genericStyle := withFg(lg.NewStyle().Align(lg.Center), colors.Fg)
-	genericMenuTextStyle := lg.NewStyle().Inherit(genericStyle).Bold(true)
+	base := lg.NewStyle().Align(lg.Center)
 
-	theme.TextStyle = lg.NewStyle().Inherit(genericStyle)
-	theme.TitleStyle = lg.NewStyle().Inherit(genericMenuTextStyle)
-	theme.SelectedMenuTextStyle = withFg(lg.NewStyle().Inherit(genericMenuTextStyle), colors.Selected)
-	theme.selectedSquareStyle = withBg(lg.NewStyle().Inherit(genericMenuTextStyle), colors.Selected)
+	theme.TextStyle = withFg(base, colors.Fg)
+	theme.TitleStyle = theme.TextStyle.Bold(true)
+	theme.SelectedMenuTextStyle = withFg(theme.TitleStyle, colors.Selected)
+	theme.selectedSquareStyle = withBg(theme.TitleStyle, colors.Selected)
 
-	theme.labelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), colors.Label.Fg)
-	theme.highlightLabelNumberStyle = withFg(lg.NewStyle().Inherit(genericStyle), colors.Label.Highlight)
+	theme.labelNumberStyle = withFg(base, colors.Label.Fg)
+	theme.highlightLabelNumberStyle = withFg(base, colors.Label.Highlight)
 
-	theme.evenSquareStyle = styleFromConfig(genericStyle, squares.Even)
-	theme.oddSquareStyle = styleFromConfig(genericStyle, squares.Odd)
-	theme.flaggedSquareStyle = styleFromConfig(genericStyle, squares.Flagged)
-	theme.minedSquareStyle = styleFromConfig(genericStyle, squares.Mined)
-	theme.explodedSquareStyle = styleFromConfig(theme.minedSquareStyle, squares.Exploded)
+	theme.evenSquareStyle = styleFromConfig(base, squares.Even)
+	theme.oddSquareStyle = styleFromConfig(base, squares.Odd)
+	theme.flaggedSquareStyle = styleFromConfig(base, squares.Flagged)
+	theme.minedSquareStyle = styleFromConfig(base, squares.Mined)
+	theme.explodedSquareStyle = styleFromConfig(base, squares.Exploded)
 
 	theme.squareMineHintColor = make([]lg.Style, len(squares.Hints))
 	for i, hintConfig := range squares.Hints {
-		theme.squareMineHintColor[i] = styleFromConfig(genericStyle, hintConfig)
+		theme.squareMineHintColor[i] = styleFromConfig(base, hintConfig)
 	}
 
 	theme.ArrowStyle = withBg(withFg(lg.NewStyle(), colors.Border), colors.Bg)
