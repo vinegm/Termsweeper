@@ -25,11 +25,11 @@ const (
 var version = "dev"
 
 type flags struct {
-	debug       bool
+	configPath  string
 	debugFile   string
+	debug       bool
 	showVersion bool
 	noConfig    bool
-	configPath  string
 }
 
 func main() {

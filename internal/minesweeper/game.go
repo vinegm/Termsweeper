@@ -8,7 +8,7 @@ import (
 
 // CellState is a bitmask of
 // what is true of a cell.
-type CellState int
+type CellState uint8
 
 // States a cell can be in, combined in its CellState.
 const (
@@ -22,7 +22,7 @@ const (
 // Cell is one square of the board.
 type Cell struct {
 	State CellState // bitmasked state of the cell
-	Adj   int       // number of adjacent mines
+	Adj   uint8     // number of adjacent mines
 }
 
 // StateIs reports whether the cell is in any of the given states.
@@ -253,11 +253,11 @@ func (game *Game) revealSingleCell(row int, col int) {
 // Expects the cell to be in bounds, revealed and not flagged.
 func (game *Game) revealAround(row, col int) {
 	cell := &game.board[row][col]
-	if cell.Adj <= 0 {
+	if cell.Adj == 0 {
 		return
 	}
 
-	numAdjFlags := 0
+	var numAdjFlags uint8
 	game.forEachNeighbour(row, col, func(nr, nc int) {
 		cell := &game.board[nr][nc]
 		if cell.StateIs(Flagged) {

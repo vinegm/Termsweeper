@@ -97,7 +97,7 @@ func (theme *Theme) handleGridBg(style lg.Style, cell minesweeper.Cell) lg.Style
 
 // Returns the style for a revealed square, by its adjacent mine count.
 func (theme *Theme) hintStyle(cell minesweeper.Cell) lg.Style {
-	if cell.Adj < len(theme.config.Theme.Squares.Hints) {
+	if int(cell.Adj) < len(theme.config.Theme.Squares.Hints) {
 		return theme.squareMineHintColor[cell.Adj]
 	}
 
