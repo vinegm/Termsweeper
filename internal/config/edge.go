@@ -7,8 +7,11 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// EdgeSetting is a set of board edges,
+// or directions out from the cursor.
 type EdgeSetting uint8
 
+// Edges a setting can hold, alone or combined.
 const (
 	EdgeNone EdgeSetting = 0
 
@@ -41,6 +44,7 @@ var edgeNames = map[string]EdgeSetting{
 	"all":        EdgeAll,
 }
 
+// UnmarshalYAML reads an edge name, or a list of them, from the config.
 func (edge *EdgeSetting) UnmarshalYAML(node *yaml.Node) error {
 	var names []string
 

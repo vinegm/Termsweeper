@@ -70,7 +70,7 @@ func (model Model) Init() tea.Cmd {
 	return nil
 }
 
-// Tea update loop
+// Update handles a message, then sizes the current window for View.
 func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	model, cmd := model.update(msg)
 	model.currentWindow.SetSize(model.width, model.height)
@@ -103,8 +103,8 @@ func (model Model) update(msg tea.Msg) (Model, tea.Cmd) {
 	return model, model.currentWindow.Update(msg)
 }
 
-// Tea view rendering, handles terminal size checks
-// and delegates to the current window.
+// View draws the current window centred on the
+// screen, or a notice if the terminal is too small.
 func (model Model) View() tea.View {
 	content := model.viewContent()
 

@@ -34,10 +34,10 @@ type menuItem struct {
 }
 
 type (
-	// Asks for control to start a new game with these settings.
+	// StartGameMsg asks for control to start a new game with these settings.
 	StartGameMsg struct{ Settings minesweeper.Settings }
 
-	// Asks for control to return to the game already in progress.
+	// ContinueGameMsg asks for control to return to the game already in progress.
 	ContinueGameMsg struct{}
 )
 
@@ -60,6 +60,7 @@ func New(th *theme.Theme, settings minesweeper.Settings) *Window {
 	}
 }
 
+// Update handles the keys, typed into the seed while editing it.
 func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:

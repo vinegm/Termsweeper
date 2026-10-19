@@ -20,7 +20,7 @@ const (
 const boardTitle = "Termsweeper"
 
 type (
-	// Asks for control to exit the board window.
+	// ExitMsg asks for control to exit the board window.
 	ExitMsg struct{}
 
 	// Message carrying a clock tick, tagged with the game generation that armed it.
@@ -43,7 +43,8 @@ type Options struct {
 	SideScrolloff int
 }
 
-// Implements the game/board screen and holds its view state.
+// Window is the game screen, holding
+// the game and its view state.
 type Window struct {
 	CursorRow int
 	CursorCol int
@@ -95,6 +96,7 @@ func (window *Window) NewGame(settings minesweeper.Settings) {
 	window.ticking = false
 }
 
+// Update handles the keys and the clock ticks.
 func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:

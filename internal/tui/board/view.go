@@ -9,6 +9,7 @@ import (
 	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
+// View draws the board at the size given to SetSize.
 func (window *Window) View() string {
 	visibleRows, visibleCols := window.viewport()
 	clipped := window.clippedEdges(visibleRows, visibleCols)

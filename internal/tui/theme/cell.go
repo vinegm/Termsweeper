@@ -8,7 +8,7 @@ import (
 	"github.com/vinegm/termsweeper/internal/minesweeper"
 )
 
-// Returns the style for a cell based on its position, selection and highlight state.
+// CellStyle is the style of a cell, by its state and whether it is selected or highlighted.
 func (theme *Theme) CellStyle(cell minesweeper.Cell, isSelected, isHighlighted bool) lg.Style {
 	if isSelected {
 		return theme.selectedSquareStyle
@@ -45,7 +45,7 @@ func (theme *Theme) CellStyle(cell minesweeper.Cell, isSelected, isHighlighted b
 	return style
 }
 
-// Returns the char for a given cell based on its state.
+// CellChar is the character a cell shows in its state.
 func (theme *Theme) CellChar(cell minesweeper.Cell) string {
 	if cell.StateIs(minesweeper.Revealed) {
 		if cell.StateIs(minesweeper.Mined) {

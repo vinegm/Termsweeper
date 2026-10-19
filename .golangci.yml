@@ -27,6 +27,7 @@ linters:
       - all
 
       - -QF1008
+      - -ST1000 # package comments are optional, written only when needed
 
     exhaustive:
       default-signifies-exhaustive: true
@@ -43,7 +44,6 @@ linters:
 
   exclusions:
     presets:
-      - comments
       - std-error-handling
       - common-false-positives
 

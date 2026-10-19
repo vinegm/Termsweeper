@@ -43,8 +43,8 @@ type Chars struct {
 	Unrevealed string `yaml:"unrevealed"`
 }
 
-// The built-in configuration, used as the
-// base the config file is layered over.
+// Default is the built-in configuration, used
+// as the base the config file is layered over.
 func Default() Config {
 	return Config{
 		Board: Board{

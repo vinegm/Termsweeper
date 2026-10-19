@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// encapsulates timing logic.
+// Timer measures how long a game takes.
 type Timer struct {
 	running bool
 
@@ -13,7 +13,7 @@ type Timer struct {
 	elapsed time.Duration
 }
 
-// initializes the timer. If already running does nothing.
+// StartTimer starts timing from zero, unless already running.
 func (timer *Timer) StartTimer() {
 	if timer.running {
 		return
@@ -24,7 +24,7 @@ func (timer *Timer) StartTimer() {
 	timer.elapsed = 0
 }
 
-// stops the timer and records the elapsed duration.
+// StopTimer stops the timer, keeping the elapsed duration.
 func (timer *Timer) StopTimer() {
 	if timer.start.IsZero() {
 		return
@@ -35,7 +35,7 @@ func (timer *Timer) StopTimer() {
 	timer.running = false
 }
 
-// Elapsed returns the current elapsed duration.
+// ElapsedTime is how long the timer has run.
 func (timer *Timer) ElapsedTime() time.Duration {
 	if timer.running {
 		return time.Since(timer.start)
@@ -44,7 +44,7 @@ func (timer *Timer) ElapsedTime() time.Duration {
 	return timer.elapsed
 }
 
-// Formatted returns a human-readable elapsed time string.
+// FormattedTime is ElapsedTime as text.
 func (timer *Timer) FormattedTime() string {
 	duration := timer.ElapsedTime()
 

@@ -6,8 +6,11 @@ import (
 	"time"
 )
 
+// CellState is a bitmask of
+// what is true of a cell.
 type CellState int
 
+// States a cell can be in, combined in its CellState.
 const (
 	Revealed CellState = 1 << iota
 	Flagged
@@ -16,18 +19,23 @@ const (
 	Odd
 )
 
-// Board cell representation.
+// Cell is one square of the board.
 type Cell struct {
 	State CellState // bitmasked state of the cell
 	Adj   int       // number of adjacent mines
 }
 
+// StateIs reports whether the cell is in any of the given states.
 func (cell Cell) StateIs(state CellState) bool {
 	return cell.State&state != 0
 }
 
+// GameState is a bitmask of
+// where the game is at.
 type GameState int
 
+// States a game can be in,
+// combined in its GameState.
 const (
 	Playing GameState = 1 << iota
 	FirstMove
@@ -52,6 +60,7 @@ type Game struct {
 	numRevealed int // revealed cells count
 }
 
+// StateIs reports whether the game is in any of the given states.
 func (game *Game) StateIs(state GameState) bool {
 	return game.state&state != 0
 }
@@ -104,11 +113,13 @@ func seedFrom(seed string) int64 {
 	return int64(hash.Sum64())
 }
 
-// Board dimensions.
+// Rows is the board's height.
 func (game *Game) Rows() int { return game.settings.Rows }
+
+// Cols is the board's width.
 func (game *Game) Cols() int { return game.settings.Cols }
 
-// Returns the cell at the given coordinates.
+// Cell returns the cell at the given coordinates.
 func (game *Game) Cell(row, col int) Cell { return game.board[row][col] }
 
 // checks if the coordinates are within the game board.
@@ -170,9 +181,10 @@ func (game *Game) revealAllMines() {
 	}
 }
 
-// Reveals the cell at the given coordinates.
-// handles the first move logic and win/loss conditions.
-// and calls the appropriate reveal functions based on the cell state.
+// Reveal uncovers the cell at the given coordinates, or its unflagged
+// neighbours when it is revealed and flagged around as many times as its
+// number. The mines are placed on the first move, so that cell is never
+// mined. The game ends on a mine or once every safe cell is revealed.
 func (game *Game) Reveal(row, col int) {
 	if !game.StateIs(PlayerTurn) || !game.inBounds(row, col) {
 		return
@@ -277,7 +289,7 @@ func (game *Game) checkWin() {
 	}
 }
 
-// Toggles the flag of the cell at the given coords.
+// ToggleFlag flags or unflags the cell at the given coordinates.
 func (game *Game) ToggleFlag(row, col int) {
 	if !game.StateIs(PlayerTurn) || !game.inBounds(row, col) {
 		return
@@ -297,7 +309,7 @@ func (game *Game) ToggleFlag(row, col int) {
 	game.usedFlags--
 }
 
-// Number of flags remaining.
+// FlagsRemaining is the mine count less the flags placed.
 func (game *Game) FlagsRemaining() int {
 	return game.settings.Mines - game.usedFlags
 }

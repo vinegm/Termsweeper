@@ -15,8 +15,8 @@ func (config *Config) clamp() {
 	config.Behaviour.SideScrolloff = max(config.Behaviour.SideScrolloff, 0)
 }
 
-// Loads configuration from file. The returned config is always usable:
-// on error the defaults are returned alongside it.
+// Load reads the config file at path. The returned config is always
+// usable: on error the defaults are returned alongside it.
 func Load(path string) (Config, error) {
 	config := Default()
 
