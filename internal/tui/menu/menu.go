@@ -17,8 +17,7 @@ type menuOption int
 const (
 	continueGame menuOption = iota
 	startNewGame
-	boardRows
-	boardCols
+	boardSize
 	mineCount
 	seed
 	quit
@@ -47,7 +46,10 @@ type Window struct {
 	Choice      int
 	OngoingGame bool
 	EditingSeed bool
-	Settings    minesweeper.Settings
+	EditingSize bool
+
+	Settings   minesweeper.Settings
+	sizeBackup minesweeper.Settings
 
 	theme *theme.Theme
 }
@@ -66,6 +68,11 @@ func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	case tea.KeyPressMsg:
 		if window.EditingSeed {
 			window.editSeed(msg)
+			return nil
+		}
+
+		if window.EditingSize {
+			window.editSize(strings.ToLower(msg.String()))
 			return nil
 		}
 
@@ -122,8 +129,7 @@ func (window *Window) items() []menuItem {
 	}
 
 	return append(items,
-		menuItem{fmt.Sprintf("Board Rows: %d", window.Settings.Rows), boardRows},
-		menuItem{fmt.Sprintf("Board Cols: %d", window.Settings.Cols), boardCols},
+		menuItem{window.sizeLabel(), boardSize},
 		menuItem{fmt.Sprintf("Mines: %d", window.Settings.Mines), mineCount},
 		menuItem{window.seedLabel(), seed},
 		menuItem{"Quit", quit},
@@ -163,6 +169,10 @@ func (window *Window) handleKey(key string) tea.Cmd {
 				return StartGameMsg{Settings: chosen}
 			}
 
+		case boardSize:
+			window.sizeBackup = window.Settings
+			window.EditingSize = true
+
 		case seed:
 			window.EditingSeed = true
 
@@ -199,6 +209,44 @@ func (window *Window) editSeed(msg tea.KeyPressMsg) {
 	}
 }
 
+// editSize handles key presses while resizing the board.
+func (window *Window) editSize(key string) {
+	settings := &window.Settings
+
+	switch key {
+	case "left", "h":
+		settings.Cols = clampDim(settings.Cols - 1)
+
+	case "right", "l":
+		settings.Cols = clampDim(settings.Cols + 1)
+
+	case "up", "k":
+		settings.Rows = clampDim(settings.Rows - 1)
+
+	case "down", "j":
+		settings.Rows = clampDim(settings.Rows + 1)
+
+	case "enter", "space":
+		window.EditingSize = false
+
+	case "esc":
+		*settings = window.sizeBackup
+		window.EditingSize = false
+	}
+
+	settings.Mines = min(settings.Mines, settings.MaxMines())
+}
+
+func (window *Window) sizeLabel() string {
+	size := fmt.Sprintf("%dx%d", window.Settings.Cols, window.Settings.Rows)
+
+	if window.EditingSize {
+		return "Board Size: ◂ " + size + " ▸"
+	}
+
+	return "Board Size: " + size
+}
+
 func (window *Window) seedLabel() string {
 	if window.EditingSeed {
 		return "Seed: " + window.Settings.Seed + "_"
@@ -215,18 +263,9 @@ func (window *Window) seedLabel() string {
 func (window *Window) adjust(action menuOption, step int) {
 	settings := &window.Settings
 
-	switch action {
-	case boardRows:
-		settings.Rows = clampDim(settings.Rows + step)
-
-	case boardCols:
-		settings.Cols = clampDim(settings.Cols + step)
-
-	case mineCount:
-		settings.Mines += step
+	if action == mineCount {
+		settings.Mines = min(max(settings.Mines+step, minesweeper.MinMines), settings.MaxMines())
 	}
-
-	settings.Mines = min(max(settings.Mines, minesweeper.MinMines), settings.MaxMines())
 }
 
 // clampDim keeps a board dimension within its limits.
