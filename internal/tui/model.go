@@ -16,11 +16,14 @@ import (
 
 // Smallest terminal the app renders correctly in.
 //
-//	WARN: Must be able to fit any window.
+//	WARN: Must be able to fit any window, and the key hints bar under it.
 const (
 	minWidth  = 61
-	minHeight = 13
+	minHeight = 15 + hintsHeight
 )
+
+// Rows the key hints bar takes at the bottom of the screen.
+const hintsHeight = 1
 
 // Window is a screen of the app. SetSize is called after
 // every Update, before View draws at that size.
@@ -28,6 +31,7 @@ type Window interface {
 	Update(msg tea.Msg) tea.Cmd
 	SetSize(width, height int)
 	View() string
+	Hints() []theme.Hint
 }
 
 // Model represents the state of the application.
@@ -38,6 +42,8 @@ type Model struct {
 	currentWindow Window
 	menu          *menu.Window
 	board         *board.Window
+
+	theme *theme.Theme
 }
 
 // New creates a new model with initial state.
@@ -49,6 +55,7 @@ func New(cfg config.Config, settings minesweeper.Settings) Model {
 		currentWindow: menuWindow,
 		menu:          menuWindow,
 		board:         board.New(th, boardOptions(cfg)),
+		theme:         th,
 	}
 }
 
@@ -73,7 +80,7 @@ func (model Model) Init() tea.Cmd {
 // Update handles a message, then sizes the current window for View.
 func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	model, cmd := model.update(msg)
-	model.currentWindow.SetSize(model.width, model.height)
+	model.currentWindow.SetSize(model.width, model.height-hintsHeight)
 
 	return model, cmd
 }
@@ -103,20 +110,10 @@ func (model Model) update(msg tea.Msg) (Model, tea.Cmd) {
 	return model, model.currentWindow.Update(msg)
 }
 
-// View draws the current window centred on the
-// screen, or a notice if the terminal is too small.
+// View draws the current window centred on the screen, with the
+// key hints bar under it, or a notice if the terminal is too small.
 func (model Model) View() tea.View {
-	content := model.viewContent()
-
-	view := tea.NewView(
-		lg.Place(
-			model.width,
-			model.height,
-			lg.Center,
-			lg.Center,
-			content,
-		),
-	)
+	view := tea.NewView(model.viewContent())
 	view.AltScreen = true
 
 	return view
@@ -124,9 +121,25 @@ func (model Model) View() tea.View {
 
 func (model Model) viewContent() string {
 	if model.width < minWidth || model.height < minHeight {
-		return fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight)
+		return lg.Place(
+			model.width,
+			model.height,
+			lg.Center,
+			lg.Center,
+			fmt.Sprintf("Terminal too small — need at least %dx%d", minWidth, minHeight),
+		)
 	}
 
 	// Render centered base panel
-	return model.currentWindow.View()
+	window := lg.Place(
+		model.width,
+		model.height-hintsHeight,
+		lg.Center,
+		lg.Center,
+		model.currentWindow.View(),
+	)
+
+	hints := model.theme.RenderHints(model.currentWindow.Hints(), model.width)
+
+	return lg.JoinVertical(lg.Left, window, hints)
 }

@@ -211,6 +211,31 @@ func (window *Window) seedLabel() string {
 	return "Seed: " + window.Settings.Seed
 }
 
+// Hints is the keys for the key hints bar, for the selected row.
+func (window *Window) Hints() []theme.Hint {
+	if window.EditingSeed {
+		return []theme.Hint{
+			{Key: "enter", Desc: "Done"},
+			{Key: "backspace", Desc: "Delete"},
+		}
+	}
+
+	hints := []theme.Hint{{Key: "jk", Desc: "Move"}}
+
+	switch window.items()[window.Choice].action {
+	case boardRows, boardCols, mineCount:
+		hints = append(hints, theme.Hint{Key: "←→", Desc: "Change"})
+
+	case seed:
+		hints = append(hints, theme.Hint{Key: "enter", Desc: "Edit"})
+
+	default:
+		hints = append(hints, theme.Hint{Key: "enter", Desc: "Select"})
+	}
+
+	return append(hints, theme.Hint{Key: "q", Desc: "Quit"})
+}
+
 // adjust steps the setting the given menu row edits.
 func (window *Window) adjust(action menuOption, step int) {
 	settings := &window.Settings

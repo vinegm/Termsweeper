@@ -8,6 +8,7 @@ type Theme struct {
 	Bg       string `yaml:"bg"`       // default bg for the window and squares
 	Selected string `yaml:"selected"` // fg of selected text, bg of the selected square
 	Border   string `yaml:"border"`
+	KeyHints string `yaml:"key_hints"` // fg of the key hints bar at the bottom
 
 	Label     Label   `yaml:"label"`
 	Highlight Checker `yaml:"highlight"`
@@ -56,6 +57,7 @@ type PreserveGridBg struct {
 func (theme Theme) Resolve() Theme {
 	fallback(&theme.Label.Fg, theme.Fg)
 	fallback(&theme.Label.Highlight, theme.Fg)
+	fallback(&theme.KeyHints, theme.Label.Fg)
 
 	squares := &theme.Squares
 

@@ -1,6 +1,8 @@
 package theme
 
 import (
+	"strings"
+
 	lg "charm.land/lipgloss/v2"
 
 	"github.com/vinegm/termsweeper/internal/config"
@@ -29,6 +31,14 @@ type Theme struct {
 
 	WindowStyle lg.Style
 	ArrowStyle  lg.Style
+
+	keyHintsStyle lg.Style
+}
+
+// Hint is a key the user can press, and what it does.
+type Hint struct {
+	Key  string
+	Desc string
 }
 
 // NewTheme resolves a Theme from the config.
@@ -88,6 +98,7 @@ func (theme *Theme) setStyles() {
 	}
 
 	theme.ArrowStyle = withBg(withFg(lg.NewStyle(), colors.Border), colors.Bg)
+	theme.keyHintsStyle = withFg(lg.NewStyle(), colors.KeyHints)
 
 	theme.WindowStyle = withBg(lg.NewStyle(), colors.Bg).
 		Padding(0, 1).
@@ -105,4 +116,14 @@ func (theme *Theme) LabelStyle(idx, cursorIdx int) lg.Style {
 	}
 
 	return theme.labelNumberStyle
+}
+
+// RenderHints draws the key hints bar, cut to fit in width.
+func (theme *Theme) RenderHints(hints []Hint, width int) string {
+	parts := make([]string, len(hints))
+	for i, hint := range hints {
+		parts[i] = hint.Desc + ": " + hint.Key
+	}
+
+	return theme.keyHintsStyle.MaxWidth(width).Render(strings.Join(parts, " | "))
 }

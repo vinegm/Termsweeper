@@ -76,6 +76,7 @@ func Default() Config {
 			Bg:       "",
 			Selected: "#5a5a5a",
 			Border:   "",
+			KeyHints: "",
 
 			Label: Label{
 				Fg:        "",

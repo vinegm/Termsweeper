@@ -4,6 +4,9 @@ import (
 	"strconv"
 
 	tea "charm.land/bubbletea/v2"
+
+	"github.com/vinegm/termsweeper/internal/minesweeper"
+	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // appendCount accumulates digits for a "count + direction" move, e.g. "5j" moves
@@ -98,4 +101,22 @@ func (window *Window) handleKey(key string) tea.Cmd {
 	}
 
 	return nil
+}
+
+// Hints is the keys for the key hints bar.
+func (window *Window) Hints() []theme.Hint {
+	endHints := []theme.Hint{
+		{Key: "r", Desc: "New game"},
+		{Key: "q", Desc: "Menu"},
+	}
+
+	if !window.game.StateIs(minesweeper.PlayerTurn) {
+		return endHints
+	}
+
+	return append([]theme.Hint{
+		{Key: "hjkl", Desc: "Move"},
+		{Key: "space", Desc: "Reveal"},
+		{Key: "f", Desc: "Flag"},
+	}, endHints...)
 }

@@ -37,6 +37,7 @@ theme:
   bg: "" # Used as the default bg color for the window and squares if not set in their specific style
   selected: "#5a5a5a" # Used as fg color for selected text and bg color for selected square
   border: "" # Missing a field is also fine, will use defaults/terminal colors
+  key_hints: "" # fg color for the key hints at the bottom, defaults to label.fg
 
   label:
     fg: "" # fg color for row/column numbers not on the cursor's row/column
