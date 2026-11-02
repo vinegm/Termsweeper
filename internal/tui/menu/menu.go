@@ -150,10 +150,10 @@ func (window *Window) handleKey(key string) tea.Cmd {
 			window.Choice++
 		}
 
-	case "left":
+	case "left", "h":
 		window.adjust(items[window.Choice].action, -1)
 
-	case "right":
+	case "right", "l":
 		window.adjust(items[window.Choice].action, 1)
 
 	case "enter", "space":
@@ -280,7 +280,7 @@ func (window *Window) Hints() []theme.Hint {
 
 	switch window.items()[window.Choice].action {
 	case mineCount:
-		hints = append(hints, theme.Hint{Key: "←→", Desc: "Change"})
+		hints = append(hints, theme.Hint{Key: "hl", Desc: "Change"})
 
 	case boardSize, seed:
 		hints = append(hints, theme.Hint{Key: "enter", Desc: "Edit"})
