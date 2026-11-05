@@ -70,9 +70,7 @@ func boardOptions(cfg config.Config) board.Options {
 	}
 }
 
-// Init initializes the model and returns an initial command.
-//
-//	WARN: This function is required by the Bubble Tea framework.
+// Init is the command run on start, none.
 func (model Model) Init() tea.Cmd {
 	return nil
 }
