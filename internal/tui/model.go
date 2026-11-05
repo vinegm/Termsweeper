@@ -87,6 +87,11 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (model Model) update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.KeyPressMsg:
+		if msg.String() == "ctrl+c" {
+			return model, tea.Quit
+		}
+
 	case tea.WindowSizeMsg:
 		model.width = msg.Width
 		model.height = msg.Height
