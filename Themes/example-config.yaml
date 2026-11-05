@@ -1,4 +1,4 @@
-# This are all the settings you can configure in a theme file.
+# These are all the settings you can configure in a theme file.
 # all values in here are the default values, but you can omit any of these and it will just use the defaults instead.
 # empty values for colors will use the defaults/terminal colors.
 # WARN: This file must represent the default

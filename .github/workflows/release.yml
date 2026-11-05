@@ -22,7 +22,7 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Goreleser build
+      - name: Goreleaser build
         uses: goreleaser/goreleaser-action@v7
         with:
           version: "~> v2"
