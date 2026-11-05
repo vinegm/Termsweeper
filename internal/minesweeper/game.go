@@ -190,15 +190,15 @@ func (game *Game) Reveal(row, col int) {
 		return
 	}
 
+	cell := &game.board[row][col]
+	if cell.StateIs(Flagged) {
+		return
+	}
+
 	if game.StateIs(FirstMove) {
 		game.placeMines(row, col)
 		game.state = Playing
 		game.StartTimer()
-	}
-
-	cell := &game.board[row][col]
-	if cell.StateIs(Flagged) {
-		return
 	}
 
 	if cell.StateIs(Revealed) {
