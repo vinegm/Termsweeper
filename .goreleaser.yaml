@@ -1,5 +1,7 @@
 version: 2
 
+project_name: termsweeper
+
 builds:
   - env:
       - CGO_ENABLED=0
@@ -17,6 +19,10 @@ builds:
 
 archives:
   - name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE*
+      - README*
+      - Themes/*
     format_overrides:
       - goos: windows
         formats: [zip]
