@@ -23,7 +23,17 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 - Optional row/column number labels (absolute or relative) and cursor row/column highlighting
 - Multiple color themes (see the Themes directory)
 
-## Getting Started
+## Install
+
+With Go 1.25 or newer (see `go.mod`):
+
+```bash
+go install github.com/vinegm/termsweeper@latest
+```
+
+Or download the archive for your system from the [releases page](https://github.com/vinegm/termsweeper/releases).
+
+## Building from source
 
 Prerequisites: Go 1.25 or newer (see `go.mod`)
 
