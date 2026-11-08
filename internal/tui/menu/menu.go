@@ -132,7 +132,7 @@ func (window *Window) items() []menuItem {
 
 	return append(items,
 		menuItem{window.sizeLabel(), boardSize},
-		menuItem{fmt.Sprintf("Mines: %d", window.Settings.Mines), mineCount},
+		menuItem{fmt.Sprintf("Mines: ◂ %d ▸", window.Settings.Mines), mineCount},
 		menuItem{window.seedLabel(), seed},
 		menuItem{"Quit", quit},
 	)
