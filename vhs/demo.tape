@@ -1,6 +1,7 @@
 Output assets/demo.gif
 
 Set Shell bash
+Set FontFamily "JetBrainsMono Nerd Font, JetBrains Mono, monospace"
 Set FontSize 18
 Set Width 900
 Set Height 800
