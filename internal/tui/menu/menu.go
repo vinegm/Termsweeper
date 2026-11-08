@@ -91,6 +91,8 @@ func (window *Window) View() string {
 
 	sb.WriteString(window.theme.TitleStyle.Render(getMenuTitle()))
 	sb.WriteString("\n")
+	sb.WriteString(window.theme.MutedStyle.Render("Minesweeper"))
+	sb.WriteString("\n")
 
 	for i, item := range window.items() {
 		sb.WriteString("\n")

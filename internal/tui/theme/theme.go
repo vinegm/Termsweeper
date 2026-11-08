@@ -20,6 +20,7 @@ type Theme struct {
 	TitleStyle            lg.Style
 	selectedSquareStyle   lg.Style
 	SelectedMenuTextStyle lg.Style
+	MutedStyle            lg.Style
 
 	evenSquareStyle lg.Style
 	oddSquareStyle  lg.Style
@@ -83,6 +84,7 @@ func (theme *Theme) setStyles() {
 	theme.SelectedMenuTextStyle = withFg(theme.TitleStyle, colors.Selected)
 	theme.selectedSquareStyle = withBg(theme.TitleStyle, colors.Selected)
 
+	theme.MutedStyle = withFg(base, colors.Label.Fg)
 	theme.labelNumberStyle = withFg(base, colors.Label.Fg)
 	theme.highlightLabelNumberStyle = withFg(base, colors.Label.Highlight)
 
