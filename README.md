@@ -21,6 +21,7 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 - Configurable board size, mine count, and display characters
 - Boards larger than the terminal scroll with the cursor, with a dashed border on the edges the board continues past
 - Optional row/column number labels (absolute or relative) and cursor row/column highlighting
+- A key hints bar at the bottom of the screen
 - Multiple color themes (see the Themes directory)
 
 ## Install
@@ -104,7 +105,7 @@ make ci      # format check, vet, lint and test
 
 Linting and formatting use [golangci-lint](https://golangci-lint.run/welcome/install/); `make demo` regenerates the demo gif and the theme screenshots with [vhs](https://github.com/charmbracelet/vhs).
 
-# Contributing
+## Contributing
 
 Contributions are welcome! Open issues or pull requests for bugs, improvements, or new themes. If you prefer, feel free to fork the project and customize it for your needs.
 
