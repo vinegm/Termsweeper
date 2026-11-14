@@ -3,10 +3,10 @@ package board
 import (
 	"strconv"
 
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/vinegm/termsweeper/internal/minesweeper"
-	"github.com/vinegm/termsweeper/internal/tui/theme"
 )
 
 // appendCount accumulates digits for a "count + direction" move, e.g. "5j" moves
@@ -62,8 +62,8 @@ func (window *Window) move(rowDelta, colDelta int) {
 	window.CursorCol = (window.CursorCol + colDelta + cols) % cols
 }
 
-func (window *Window) handleKey(key string) tea.Cmd {
-	if window.appendCount(key) {
+func (window *Window) handleKey(pressed lowered) tea.Cmd {
+	if window.appendCount(string(pressed)) {
 		return nil
 	}
 
@@ -72,29 +72,29 @@ func (window *Window) handleKey(key string) tea.Cmd {
 	colCount := window.moveCount(game.Cols())
 	window.countBuffer = ""
 
-	switch key {
-	case "up", "k", "w":
+	switch {
+	case key.Matches(pressed, keys.Up):
 		window.move(-rowCount, 0)
 
-	case "down", "j", "s":
+	case key.Matches(pressed, keys.Down):
 		window.move(rowCount, 0)
 
-	case "left", "h", "a":
+	case key.Matches(pressed, keys.Left):
 		window.move(0, -colCount)
 
-	case "right", "l", "d":
+	case key.Matches(pressed, keys.Right):
 		window.move(0, colCount)
 
-	case "space", "enter":
+	case key.Matches(pressed, keys.Reveal):
 		game.Reveal(window.CursorRow, window.CursorCol)
 
-	case "f":
+	case key.Matches(pressed, keys.Flag):
 		game.ToggleFlag(window.CursorRow, window.CursorCol)
 
-	case "r":
+	case key.Matches(pressed, keys.NewGame):
 		window.NewGame(window.settings)
 
-	case "q":
+	case key.Matches(pressed, keys.Menu):
 		return func() tea.Msg {
 			return ExitMsg{}
 		}
@@ -103,20 +103,11 @@ func (window *Window) handleKey(key string) tea.Cmd {
 	return nil
 }
 
-// Hints is the keys for the key hints bar.
-func (window *Window) Hints() []theme.Hint {
-	endHints := []theme.Hint{
-		{Key: "r", Desc: "New game"},
-		{Key: "q", Desc: "Menu"},
-	}
-
+// ShortHelp is the keys for the key hints bar.
+func (window *Window) ShortHelp() []key.Binding {
 	if !window.game.StateIs(minesweeper.PlayerTurn) {
-		return endHints
+		return []key.Binding{keys.NewGame, keys.Menu}
 	}
 
-	return append([]theme.Hint{
-		{Key: "hjkl", Desc: "Move"},
-		{Key: "space", Desc: "Reveal"},
-		{Key: "f", Desc: "Flag"},
-	}, endHints...)
+	return []key.Binding{keys.Move, keys.Reveal, keys.Flag, keys.NewGame, keys.Menu}
 }

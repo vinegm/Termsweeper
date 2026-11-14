@@ -3,6 +3,7 @@ package tui
 import (
 	"fmt"
 
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 	lg "charm.land/lipgloss/v2"
 
@@ -31,7 +32,7 @@ type Window interface {
 	Update(msg tea.Msg) tea.Cmd
 	SetSize(width, height int)
 	View() string
-	Hints() []theme.Hint
+	ShortHelp() []key.Binding
 }
 
 // Model represents the state of the application.
@@ -86,7 +87,7 @@ func (model Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (model Model) update(msg tea.Msg) (Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
-		if msg.String() == "ctrl+c" {
+		if key.Matches(msg, appKeys.ForceQuit) {
 			return model, tea.Quit
 		}
 
@@ -142,7 +143,7 @@ func (model Model) viewContent() string {
 		model.currentWindow.View(),
 	)
 
-	hints := model.theme.RenderHints(model.currentWindow.Hints(), model.width)
+	hints := model.theme.RenderHints(model.currentWindow.ShortHelp(), model.width)
 
 	return lg.JoinVertical(lg.Left, window, hints)
 }

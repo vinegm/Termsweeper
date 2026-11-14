@@ -1,6 +1,7 @@
 # Screenshots of a game in progress, one per theme, for the README
 
 Set Shell bash
+Set FontFamily "JetBrainsMono Nerd Font, JetBrains Mono, monospace"
 Set FontSize 18
 Set Width 900
 Set Height 900

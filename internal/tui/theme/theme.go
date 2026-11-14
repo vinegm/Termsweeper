@@ -3,6 +3,7 @@ package theme
 import (
 	"strings"
 
+	"charm.land/bubbles/v2/key"
 	lg "charm.land/lipgloss/v2"
 
 	"github.com/vinegm/termsweeper/internal/config"
@@ -34,12 +35,6 @@ type Theme struct {
 	ArrowStyle  lg.Style
 
 	keyHintsStyle lg.Style
-}
-
-// Hint is a key the user can press, and what it does.
-type Hint struct {
-	Key  string
-	Desc string
 }
 
 // NewTheme resolves a Theme from the config.
@@ -120,11 +115,15 @@ func (theme *Theme) LabelStyle(idx, cursorIdx int) lg.Style {
 	return theme.labelNumberStyle
 }
 
-// RenderHints draws the key hints bar, cut to fit in width.
-func (theme *Theme) RenderHints(hints []Hint, width int) string {
-	parts := make([]string, len(hints))
-	for i, hint := range hints {
-		parts[i] = hint.Desc + ": " + hint.Key
+// RenderHints draws the key hints bar from the help of each
+// enabled binding, cut to fit in width.
+func (theme *Theme) RenderHints(bindings []key.Binding, width int) string {
+	parts := make([]string, 0, len(bindings))
+	for _, binding := range bindings {
+		help := binding.Help()
+		if binding.Enabled() && help.Desc != "" {
+			parts = append(parts, help.Desc+": "+help.Key)
+		}
 	}
 
 	return theme.keyHintsStyle.MaxWidth(width).Render(strings.Join(parts, " | "))

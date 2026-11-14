@@ -5,6 +5,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/vinegm/termsweeper/internal/minesweeper"
@@ -72,11 +73,11 @@ func (window *Window) Update(msg tea.Msg) tea.Cmd {
 		}
 
 		if window.EditingSize {
-			window.editSize(strings.ToLower(msg.String()))
+			window.editSize(lowered(strings.ToLower(msg.String())))
 			return nil
 		}
 
-		return window.handleKey(strings.ToLower(msg.String()))
+		return window.handleKey(lowered(strings.ToLower(msg.String())))
 	}
 
 	return nil
@@ -138,27 +139,27 @@ func (window *Window) items() []menuItem {
 	)
 }
 
-func (window *Window) handleKey(key string) tea.Cmd {
+func (window *Window) handleKey(pressed lowered) tea.Cmd {
 	items := window.items()
 
-	switch key {
-	case "up", "k":
+	switch {
+	case key.Matches(pressed, keys.Up):
 		if window.Choice > 0 {
 			window.Choice--
 		}
 
-	case "down", "j":
+	case key.Matches(pressed, keys.Down):
 		if window.Choice < len(items)-1 {
 			window.Choice++
 		}
 
-	case "left", "h":
+	case key.Matches(pressed, keys.Left):
 		window.adjust(items[window.Choice].action, -1)
 
-	case "right", "l":
+	case key.Matches(pressed, keys.Right):
 		window.adjust(items[window.Choice].action, 1)
 
-	case "enter", "space":
+	case key.Matches(pressed, keys.Select):
 		switch items[window.Choice].action {
 		case continueGame:
 			return func() tea.Msg {
@@ -182,7 +183,7 @@ func (window *Window) handleKey(key string) tea.Cmd {
 			return tea.Quit
 		}
 
-	case "q":
+	case key.Matches(pressed, keys.Quit):
 		return tea.Quit
 	}
 
@@ -193,11 +194,11 @@ func (window *Window) handleKey(key string) tea.Cmd {
 func (window *Window) editSeed(msg tea.KeyPressMsg) {
 	text := &window.Settings.Seed
 
-	switch msg.String() {
-	case "enter", "esc":
+	switch {
+	case key.Matches(msg, keys.SeedDone):
 		window.EditingSeed = false
 
-	case "backspace":
+	case key.Matches(msg, keys.Delete):
 		_, size := utf8.DecodeLastRuneInString(*text)
 		*text = (*text)[:len(*text)-size]
 
@@ -212,26 +213,26 @@ func (window *Window) editSeed(msg tea.KeyPressMsg) {
 }
 
 // editSize handles key presses while resizing the board.
-func (window *Window) editSize(key string) {
+func (window *Window) editSize(pressed lowered) {
 	settings := &window.Settings
 
-	switch key {
-	case "left", "h":
+	switch {
+	case key.Matches(pressed, keys.Left):
 		settings.Cols = clampDim(settings.Cols - 1)
 
-	case "right", "l":
+	case key.Matches(pressed, keys.Right):
 		settings.Cols = clampDim(settings.Cols + 1)
 
-	case "up", "k":
+	case key.Matches(pressed, keys.Up):
 		settings.Rows = clampDim(settings.Rows - 1)
 
-	case "down", "j":
+	case key.Matches(pressed, keys.Down):
 		settings.Rows = clampDim(settings.Rows + 1)
 
-	case "enter", "space":
+	case key.Matches(pressed, keys.SizeDone):
 		window.EditingSize = false
 
-	case "esc":
+	case key.Matches(pressed, keys.Cancel):
 		*settings = window.sizeBackup
 		window.EditingSize = false
 	}
@@ -261,37 +262,32 @@ func (window *Window) seedLabel() string {
 	return "Seed: " + window.Settings.Seed
 }
 
-// Hints is the keys for the key hints bar, for the selected row.
-func (window *Window) Hints() []theme.Hint {
+// ShortHelp is the keys for the key hints bar, for the selected row.
+func (window *Window) ShortHelp() []key.Binding {
 	if window.EditingSeed {
-		return []theme.Hint{
-			{Key: "enter", Desc: "Done"},
-			{Key: "backspace", Desc: "Delete"},
-		}
+		return []key.Binding{keys.SeedDone, keys.Delete}
 	}
 
 	if window.EditingSize {
-		return []theme.Hint{
-			{Key: "hjkl", Desc: "Resize"},
-			{Key: "enter", Desc: "Done"},
-			{Key: "esc", Desc: "Cancel"},
-		}
+		return []key.Binding{keys.Resize, keys.SizeDone, keys.Cancel}
 	}
 
-	hints := []theme.Hint{{Key: "jk", Desc: "Move"}}
+	bindings := []key.Binding{keys.Move}
 
 	switch window.items()[window.Choice].action {
 	case mineCount:
-		hints = append(hints, theme.Hint{Key: "hl", Desc: "Change"})
+		bindings = append(bindings, keys.Change)
 
 	case boardSize, seed:
-		hints = append(hints, theme.Hint{Key: "enter", Desc: "Edit"})
+		edit := keys.Select
+		edit.SetHelp("enter", "Edit")
+		bindings = append(bindings, edit)
 
 	default:
-		hints = append(hints, theme.Hint{Key: "enter", Desc: "Select"})
+		bindings = append(bindings, keys.Select)
 	}
 
-	return append(hints, theme.Hint{Key: "q", Desc: "Quit"})
+	return append(bindings, keys.Quit)
 }
 
 // adjust steps the setting the given menu row edits.

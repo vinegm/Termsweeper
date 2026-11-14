@@ -100,7 +100,7 @@ func (window *Window) NewGame(settings minesweeper.Settings) {
 func (window *Window) Update(msg tea.Msg) tea.Cmd {
 	switch msg := msg.(type) {
 	case tea.KeyPressMsg:
-		cmd := window.handleKey(strings.ToLower(msg.String()))
+		cmd := window.handleKey(lowered(strings.ToLower(msg.String())))
 
 		if cmd != nil {
 			return cmd
