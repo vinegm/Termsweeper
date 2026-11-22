@@ -26,6 +26,24 @@ TermSweeper is a TUI minesweeper game built with Go and the Bubble Tea TUI frame
 
 ## Install
 
+### Homebrew
+
+```bash
+brew install vinegm/tap/termsweeper
+```
+
+### Arch Linux
+
+The `PKGBUILD` in this repo installs the latest release's binary:
+
+```bash
+git clone https://github.com/vinegm/termsweeper.git
+cd termsweeper
+makepkg -si
+```
+
+### With Go
+
 With Go 1.25 or newer (see `go.mod`):
 
 ```bash
